@@ -8,6 +8,7 @@ use App\Http\Requests\UpdateProductRequest;
 use App\Http\Resources\ProductResource;
 use App\Models\Product;
 use App\Services\ProductService;
+use App\Services\SearchService;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -22,7 +23,8 @@ class ProductController extends Controller
      * @param ProductService $productService
      */
     public function __construct(
-        protected ProductService $productService
+        protected ProductService $productService,
+        protected SearchService $searchService
     ) {}
 
     /**
@@ -32,6 +34,25 @@ class ProductController extends Controller
      */
     public function index(): JsonResponse
     {
+        // Check if there are search/filter parameters
+        $hasFilters = request()->hasAny(['q', 'min_price', 'max_price', 'stock_status', 'sort_by']);
+        
+        if ($hasFilters) {
+            // Use search service if filters are present
+            $filters = request()->only([
+                'q', 'min_price', 'max_price', 'stock_status', 'sort_by', 'sort_order', 'per_page'
+            ]);
+            
+            $products = $this->searchService->searchProducts($filters);
+            
+            return $this->paginatedResponse(
+                $products->through(fn($product) => new ProductResource($product)),
+                'Products retrieved successfully',
+                ['filters_applied' => array_filter($filters)]
+            );
+        }
+        
+        // Default product listing
         $products = $this->productService->getProducts(
             perPage: request()->get('per_page', 15)
         );

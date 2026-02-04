@@ -1,7 +1,6 @@
 # Laravel 12 + MCP Boilerplate Project
 
 ## 📦 Installation Guide
-
 ### Step 1: Install Dependencies
 
 ```bash

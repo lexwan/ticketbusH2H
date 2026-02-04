@@ -20,6 +20,7 @@ class Product extends Model
         'sku',
         'price',
         'stock',
+        'category_id',
     ];
 
     /**
@@ -31,4 +32,12 @@ class Product extends Model
         'price' => 'decimal:2',
         'stock' => 'integer',
     ];
+
+    /**
+     * Relasi: Product belongs to Category
+     */
+    public function category()
+    {
+        return $this->belongsTo(Category::class);
+    }
 }

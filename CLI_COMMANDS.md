@@ -238,8 +238,6 @@ php artisan route:list
 
 # Show application information
 php artisan about
-```
-
 ---
 
 ## 📝 Quick API Testing with curl
