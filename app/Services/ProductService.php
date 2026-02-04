@@ -16,7 +16,7 @@ class ProductService
      */
     public function getProducts(int $perPage = 15): LengthAwarePaginator
     {
-        return Product::latest()->paginate($perPage);
+        return Product::with('category')->latest()->paginate($perPage);
     }
 
     /**
@@ -26,7 +26,7 @@ class ProductService
      */
     public function getAllProducts(): Collection
     {
-        return Product::all();
+        return Product::with('category')->get();
     }
 
     /**
@@ -37,7 +37,7 @@ class ProductService
      */
     public function findProduct(int $id): ?Product
     {
-        return Product::find($id);
+        return Product::with('category')->find($id);
     }
 
     /**

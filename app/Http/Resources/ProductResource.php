@@ -21,6 +21,13 @@ class ProductResource extends JsonResource
             'price' => (float) $this->price,
             'formatted_price' => '$' . number_format($this->price, 2),
             'stock' => $this->stock,
+            'category' => $this->whenLoaded('category', function () {
+                return [
+                    'id' => $this->category->id,
+                    'name' => $this->category->name,
+                    'description' => $this->category->description,
+                ];
+            }),
             'images' => $this->image_urls,
             'primary_image_url' => $this->primary_image?->image_url,
             'created_at' => $this->created_at?->toISOString(),

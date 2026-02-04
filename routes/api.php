@@ -66,4 +66,21 @@ Route::middleware('auth:api')->group(function () {
     Route::post('/products/{product}/images', [ProductController::class, 'uploadImages']);
     Route::delete('/products/{product}/images/{image}', [ProductController::class, 'deleteImage']);
     Route::put('/products/{product}/images/{image}/primary', [ProductController::class, 'setPrimaryImage']);
+    
+    // Orders
+    Route::apiResource('orders', App\Http\Controllers\Api\OrderController::class);
+    
+    // Cart
+    Route::get('/cart', [App\Http\Controllers\Api\CartController::class, 'index']);
+    Route::post('/cart', [App\Http\Controllers\Api\CartController::class, 'store']);
+    Route::put('/cart/{cart}', [App\Http\Controllers\Api\CartController::class, 'update']);
+    Route::delete('/cart/{cart}', [App\Http\Controllers\Api\CartController::class, 'destroy']);
+    Route::delete('/cart', [App\Http\Controllers\Api\CartController::class, 'clear']);
+    Route::post('/cart/checkout', [App\Http\Controllers\Api\CartController::class, 'checkout']);
+    
+    // Payments
+    Route::post('/payments', [App\Http\Controllers\Api\PaymentController::class, 'store']);
+    Route::get('/payments/{payment}', [App\Http\Controllers\Api\PaymentController::class, 'show']);
+    Route::post('/payments/{payment}/confirm', [App\Http\Controllers\Api\PaymentController::class, 'confirm']);
+    Route::get('/payments/{payment}/status', [App\Http\Controllers\Api\PaymentController::class, 'status']);
 });

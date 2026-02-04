@@ -22,22 +22,34 @@ class RoleSeeder extends Seeder
             'create products',
             'edit products',
             'delete products',
+            'view categories',
+            'create categories',
+            'edit categories',
+            'delete categories',
             'manage users',
         ];
 
         foreach ($permissions as $permission) {
-            Permission::firstOrCreate(['name' => $permission]);
+            Permission::firstOrCreate(['name' => $permission, 'guard_name' => 'web']);
+            Permission::firstOrCreate(['name' => $permission, 'guard_name' => 'api']);
         }
 
-        // Create roles and assign permissions
-        $adminRole = Role::firstOrCreate(['name' => 'admin']);
-        $adminRole->givePermissionTo(Permission::all());
+        // Create roles and assign permissions for both guards
+        $adminRoleWeb = Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'web']);
+        $adminRoleWeb->givePermissionTo(Permission::where('guard_name', 'web')->get());
+        
+        $adminRoleApi = Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'api']);
+        $adminRoleApi->givePermissionTo(Permission::where('guard_name', 'api')->get());
 
-        $userRole = Role::firstOrCreate(['name' => 'user']);
-        $userRole->givePermissionTo([
-            'view products',
+        $userRoleWeb = Role::firstOrCreate(['name' => 'user', 'guard_name' => 'web']);
+        $userRoleWeb->givePermissionTo(['view products', 'view categories']);
+        
+        $userRoleApi = Role::firstOrCreate(['name' => 'user', 'guard_name' => 'api']);
+        $userRoleApi->givePermissionTo([
+            Permission::where('name', 'view products')->where('guard_name', 'api')->first(),
+            Permission::where('name', 'view categories')->where('guard_name', 'api')->first(),
         ]);
-
+    
         $this->command->info('Roles and permissions created successfully!');
     }
 }

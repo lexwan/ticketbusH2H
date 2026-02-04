@@ -61,4 +61,20 @@ class User extends Authenticatable
     {
         return $this->hasMany(ActivityLog::class);
     }
+
+    /**
+     * Get user orders.
+     */
+    public function orders(): HasMany
+    {
+        return $this->hasMany(Order::class);
+    }
+
+    /**
+     * Get user cart items.
+     */
+    public function cart(): HasMany
+    {
+        return $this->hasMany(Cart::class);
+    }
 }

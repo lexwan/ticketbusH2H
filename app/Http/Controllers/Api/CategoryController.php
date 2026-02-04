@@ -15,11 +15,14 @@ class CategoryController extends Controller
 {
     use ApiResponse;
 
-    public function __construct(
-        protected CategoryService $categoryService
-    ) {
-        // Admin only for CUD operations
-        $this->middleware(['auth:api', 'role:admin'])
+    protected $categoryService;
+
+    public function __construct(CategoryService $categoryService)
+    {
+        $this->categoryService = $categoryService;
+        
+        // Only require authentication
+        $this->middleware('auth:api')
             ->only(['store', 'update', 'destroy']);
     }
 
@@ -41,6 +44,14 @@ class CategoryController extends Controller
      */
     public function store(StoreCategoryRequest $request): JsonResponse
     {
+        // Check if user has admin role
+        if (!auth()->user()->hasRole('admin')) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized. Admin role required.'
+            ], 403);
+        }
+        
         $category = $this->categoryService->createCategory($request->validated());
 
         return $this->createdResponse(
