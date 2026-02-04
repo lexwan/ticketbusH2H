@@ -27,7 +27,12 @@ class UpdateProfileRequest extends FormRequest
             'phone' => ['sometimes', 'nullable', 'string', 'max:20'],
             'address' => ['sometimes', 'nullable', 'string', 'max:500'],
             'date_of_birth' => ['sometimes', 'nullable', 'date', 'before:today'],
-            'avatar' => ['sometimes', 'image', 'mimes:jpeg,png,jpg,gif', 'max:2048']
+            'avatar' => ['sometimes', 'image', 'mimes:jpeg,png,jpg,gif', 'max:2048'],
+            
+            // Password change fields
+            'current_password' => ['sometimes', 'required_with:new_password', 'string'],
+            'new_password' => ['sometimes', 'string', 'min:8', 'confirmed'],
+            'new_password_confirmation' => ['sometimes', 'required_with:new_password']
         ];
     }
 
@@ -47,7 +52,13 @@ class UpdateProfileRequest extends FormRequest
             'date_of_birth.before' => 'Date of birth must be before today.',
             'avatar.image' => 'Avatar must be an image file.',
             'avatar.mimes' => 'Avatar must be a jpeg, png, jpg, or gif file.',
-            'avatar.max' => 'Avatar file size must not exceed 2MB.'
+            'avatar.max' => 'Avatar file size must not exceed 2MB.',
+            
+            // Password messages
+            'current_password.required_with' => 'Current password is required when changing password.',
+            'new_password.min' => 'New password must be at least 8 characters.',
+            'new_password.confirmed' => 'New password confirmation does not match.',
+            'new_password_confirmation.required_with' => 'Password confirmation is required.'
         ];
     }
 }

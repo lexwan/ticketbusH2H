@@ -34,39 +34,49 @@ class UserController extends Controller
     }
 
     /**
-     * Update user profile (with optional avatar).
+     * Update user profile (with optional avatar and password change).
      */
     public function updateProfile(UpdateProfileRequest $request): JsonResponse
     {
         $user = $request->user();
         $data = $request->validated();
         
-        // Handle avatar upload if present
-        if ($request->hasFile('avatar')) {
-            $request->validate([
-                'avatar' => ['image', 'mimes:jpeg,png,jpg,gif', 'max:2048']
-            ]);
+        try {
+            // Handle avatar upload if present
+            if ($request->hasFile('avatar')) {
+                $request->validate([
+                    'avatar' => ['image', 'mimes:jpeg,png,jpg,gif', 'max:2048']
+                ]);
+                
+                $avatarUrl = $this->userService->uploadAvatar(
+                    $user,
+                    $request->file('avatar')
+                );
+            }
             
-            $avatarUrl = $this->userService->uploadAvatar(
-                $user,
-                $request->file('avatar')
+            // Update profile data (exclude avatar file from data)
+            $profileData = collect($data)->except('avatar')->toArray();
+            if (!empty($profileData)) {
+                $user = $this->userService->updateProfile($user, $profileData);
+            }
+            
+            // Get updated profile with avatar URL
+            $responseData = $user->fresh()->toArray();
+            $responseData['avatar_url'] = $user->avatar ? Storage::disk('public')->url($user->avatar) : null;
+            
+            $message = 'Profile updated successfully';
+            if (isset($data['new_password'])) {
+                $message = 'Profile and password updated successfully';
+            }
+            
+            return $this->successResponse(
+                $responseData,
+                $message
             );
+            
+        } catch (\Exception $e) {
+            return $this->errorResponse($e->getMessage(), 400);
         }
-        
-        // Update profile data (exclude avatar file from data)
-        $profileData = collect($data)->except('avatar')->toArray();
-        if (!empty($profileData)) {
-            $user = $this->userService->updateProfile($user, $profileData);
-        }
-        
-        // Get updated profile with avatar URL
-        $responseData = $user->fresh()->toArray();
-        $responseData['avatar_url'] = $user->avatar ? Storage::disk('public')->url($user->avatar) : null;
-        
-        return $this->successResponse(
-            $responseData,
-            'Profile updated successfully'
-        );
     }
 
     /**

@@ -24,6 +24,26 @@ class UserService
     {
         $originalData = $user->toArray();
         
+        // Handle password change if provided
+        if (isset($data['current_password']) && isset($data['new_password'])) {
+            // Verify current password
+            if (!Hash::check($data['current_password'], $user->password)) {
+                throw new \Exception('Current password is incorrect.');
+            }
+            
+            // Update password
+            $data['password'] = Hash::make($data['new_password']);
+            
+            // Remove password fields from data
+            unset($data['current_password'], $data['new_password'], $data['new_password_confirmation']);
+            
+            // Log password change
+            $this->activityLogService->logActivity(
+                'password_changed',
+                'User changed their password'
+            );
+        }
+        
         // Handle avatar upload if present
         if (isset($data['avatar']) && $data['avatar'] instanceof UploadedFile) {
             // Delete old avatar if exists
@@ -38,15 +58,18 @@ class UserService
         
         $user->update($data);
         
-        // Log activity
-        $this->activityLogService->logActivity(
-            'profile_updated',
-            'User updated their profile',
-            [
-                'original' => $originalData,
-                'updated' => $user->fresh()->toArray()
-            ]
-        );
+        // Log profile update (exclude password from logs)
+        $logData = collect($data)->except(['password'])->toArray();
+        if (!empty($logData)) {
+            $this->activityLogService->logActivity(
+                'profile_updated',
+                'User updated their profile',
+                [
+                    'original' => collect($originalData)->except(['password'])->toArray(),
+                    'updated' => collect($user->fresh()->toArray())->except(['password'])->toArray()
+                ]
+            );
+        }
         
         return $user->fresh();
     }

@@ -32,16 +32,17 @@ Route::get('/search/popular', [SearchController::class, 'popularTerms']);
 
 // Protected routes - require authentication
 Route::middleware('auth:api')->group(function () {
+    // User Profile Management (put specific routes first)
+    Route::post('/profile/update', [UserController::class, 'updateProfile']);
+    Route::get('/profile/test', function() { return response()->json(['message' => 'Profile route works']); });
+    Route::get('/profile/activities', [UserController::class, 'activities']);
+    Route::get('/profile', [UserController::class, 'profile']);
+    Route::put('/profile', [UserController::class, 'updateProfile']);
+    
     // User info
     Route::get('/user', function (Request $request) {
         return $request->user();
     });
-    
-    // User Profile Management
-    Route::get('/profile', [UserController::class, 'profile']);
-    Route::put('/profile', [UserController::class, 'updateProfile']);
-    Route::post('/profile/update', [UserController::class, 'updateProfile']);
-    Route::get('/profile/activities', [UserController::class, 'activities']);
 
     //categories
     Route::post('/categories', [CategoryController::class, 'store']);
