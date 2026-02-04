@@ -24,6 +24,18 @@ class UserService
     {
         $originalData = $user->toArray();
         
+        // Handle avatar upload if present
+        if (isset($data['avatar']) && $data['avatar'] instanceof UploadedFile) {
+            // Delete old avatar if exists
+            if ($user->avatar) {
+                Storage::disk('public')->delete($user->avatar);
+            }
+            
+            // Store new avatar
+            $path = $data['avatar']->store('avatars', 'public');
+            $data['avatar'] = $path;
+        }
+        
         $user->update($data);
         
         // Log activity

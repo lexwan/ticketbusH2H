@@ -9,6 +9,7 @@ use App\Services\UserService;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class UserController extends Controller
 {
@@ -17,7 +18,11 @@ class UserController extends Controller
     public function __construct(
         private UserService $userService,
         private ActivityLogService $activityLogService
-    ) {}
+    ) {
+        $this->middleware('auth:api');
+        $this->middleware('permission:view profile', ['only' => ['profile']]);
+        $this->middleware('permission:edit profile', ['only' => ['updateProfile', 'uploadAvatar', 'deleteAvatar']]);
+    }
 
     /**
      * Get user profile.
@@ -42,8 +47,11 @@ class UserController extends Controller
             $request->validated()
         );
         
+        $responseData = $user->toArray();
+        $responseData['avatar_url'] = $user->avatar ? Storage::disk('public')->url($user->avatar) : null;
+        
         return $this->successResponse(
-            $user,
+            $responseData,
             'Profile updated successfully'
         );
     }

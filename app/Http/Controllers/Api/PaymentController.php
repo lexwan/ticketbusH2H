@@ -16,6 +16,9 @@ class PaymentController extends Controller
     public function __construct()
     {
         $this->middleware('auth:api');
+        $this->middleware('permission:create payments', ['only' => ['store']]);
+        $this->middleware('permission:view payments', ['only' => ['show', 'status']]);
+        $this->middleware('permission:confirm payments', ['only' => ['confirm']]);
     }
 
     /**

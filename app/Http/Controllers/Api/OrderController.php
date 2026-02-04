@@ -16,6 +16,10 @@ class OrderController extends Controller
     public function __construct()
     {
         $this->middleware('auth:api');
+        $this->middleware('permission:view orders', ['only' => ['index', 'show']]);
+        $this->middleware('permission:create orders', ['only' => ['store']]);
+        $this->middleware('permission:edit orders', ['only' => ['update']]);
+        $this->middleware('permission:cancel orders', ['only' => ['destroy']]);
     }
 
     /**

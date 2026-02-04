@@ -21,9 +21,11 @@ class CategoryController extends Controller
     {
         $this->categoryService = $categoryService;
         
-        // Only require authentication
-        $this->middleware('auth:api')
-            ->only(['store', 'update', 'destroy']);
+        // Permission-based access control
+        $this->middleware('auth:api', ['except' => ['index', 'show']]);
+        $this->middleware('permission:create categories', ['only' => ['store']]);
+        $this->middleware('permission:edit categories', ['only' => ['update']]);
+        $this->middleware('permission:delete categories', ['only' => ['destroy']]);
     }
 
     /**

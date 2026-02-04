@@ -16,17 +16,44 @@ class RoleSeeder extends Seeder
         // Reset cached roles and permissions
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
 
-        // Create permissions
+        // permissions
         $permissions = [
+            // Product permissions
             'view products',
             'create products',
             'edit products',
             'delete products',
+            
+            // Category permissions
             'view categories',
             'create categories',
             'edit categories',
             'delete categories',
+            
+            // Order permissions
+            'view orders',
+            'create orders',
+            'edit orders',
+            'cancel orders',
+            'manage all orders', // Admin only - view all users' orders
+            
+            // Cart permissions
+            'manage cart',
+            
+            // Payment permissions
+            'create payments',
+            'view payments',
+            'confirm payments',
+            
+            // User management
             'manage users',
+            'view users',
+            'edit users',
+            'delete users',
+            
+            // Profile permissions
+            'view profile',
+            'edit profile',
         ];
 
         foreach ($permissions as $permission) {
@@ -34,7 +61,7 @@ class RoleSeeder extends Seeder
             Permission::firstOrCreate(['name' => $permission, 'guard_name' => 'api']);
         }
 
-        // Create roles and assign permissions for both guards
+        // roles and assign permissions for both guards
         $adminRoleWeb = Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'web']);
         $adminRoleWeb->givePermissionTo(Permission::where('guard_name', 'web')->get());
         
@@ -42,13 +69,32 @@ class RoleSeeder extends Seeder
         $adminRoleApi->givePermissionTo(Permission::where('guard_name', 'api')->get());
 
         $userRoleWeb = Role::firstOrCreate(['name' => 'user', 'guard_name' => 'web']);
-        $userRoleWeb->givePermissionTo(['view products', 'view categories']);
+        $userRoleWeb->givePermissionTo([
+            'view products',
+            'view categories', 
+            'view orders',
+            'create orders',
+            'edit orders',
+            'cancel orders',
+            'manage cart',
+            'create payments',
+            'view payments',
+            'confirm payments',
+            'view profile',
+            'edit profile',
+        ]);
         
         $userRoleApi = Role::firstOrCreate(['name' => 'user', 'guard_name' => 'api']);
-        $userRoleApi->givePermissionTo([
-            Permission::where('name', 'view products')->where('guard_name', 'api')->first(),
-            Permission::where('name', 'view categories')->where('guard_name', 'api')->first(),
-        ]);
+        $userPermissions = [
+            'view products', 'view categories', 'view orders', 'create orders', 
+            'edit orders', 'cancel orders', 'manage cart', 'create payments',
+            'view payments', 'confirm payments', 'view profile', 'edit profile'
+        ];
+        
+        foreach ($userPermissions as $permission) {
+            $perm = Permission::where('name', $permission)->where('guard_name', 'api')->first();
+            if ($perm) $userRoleApi->givePermissionTo($perm);
+        }
     
         $this->command->info('Roles and permissions created successfully!');
     }
