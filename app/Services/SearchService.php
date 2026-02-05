@@ -61,7 +61,14 @@ class SearchService
 
         $perPage = min($filters['per_page'] ?? 15, 50); // Max 50 per page
         
-        return $query->paginate($perPage);
+        $results = $query->paginate($perPage);
+        
+        // Log search if there's a query
+        if (!empty($filters['q'])) {
+            $this->logSearch($filters['q'], $results->total());
+        }
+        
+        return $results;
     }
 
     /**
@@ -122,11 +129,29 @@ class SearchService
      */
     public function getPopularSearchTerms(int $limit = 10): array
     {
-        // This would typically come from a search_logs table
-        // For now, return some mock data
-        return [
-            'laptop', 'phone', 'headphones', 'keyboard', 'mouse',
-            'monitor', 'tablet', 'camera', 'speaker', 'charger'
-        ];
+        return \App\Models\SearchLog::selectRaw('query, COUNT(*) as search_count')
+            ->where('created_at', '>=', now()->subDays(30)) // Last 30 days
+            ->groupBy('query')
+            ->orderByDesc('search_count')
+            ->limit($limit)
+            ->pluck('query')
+            ->toArray();
+    }
+
+    /**
+     * Log search query.
+     *
+     * @param string $query
+     * @param int $resultsCount
+     * @return void
+     */
+    public function logSearch(string $query, int $resultsCount): void
+    {
+        \App\Models\SearchLog::create([
+            'query' => $query,
+            'user_id' => auth()->id(),
+            'results_count' => $resultsCount,
+            'ip_address' => request()->ip(),
+        ]);
     }
 }

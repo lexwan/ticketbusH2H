@@ -75,9 +75,15 @@ class ProductController extends Controller
      */
     public function store(StoreProductRequest $request): JsonResponse
     {
-        $product = $this->productService->createProduct(
-            $request->validated()
-        );
+        $productData = $request->validated();
+        
+        // Handle image uploads if present
+        if ($request->hasFile('images')) {
+            $images = $request->file('images');
+            $productData['images'] = $images;
+        }
+        
+        $product = $this->productService->createProduct($productData);
 
         return $this->createdResponse(
             new ProductResource($product),
@@ -108,9 +114,17 @@ class ProductController extends Controller
      */
     public function update(UpdateProductRequest $request, Product $product): JsonResponse
     {
+        $productData = $request->validated();
+        
+        // Handle image uploads if present
+        if ($request->hasFile('images')) {
+            $images = $request->file('images');
+            $productData['images'] = $images;
+        }
+        
         $updatedProduct = $this->productService->updateProduct(
             $product,
-            $request->validated()
+            $productData
         );
 
         return $this->successResponse(

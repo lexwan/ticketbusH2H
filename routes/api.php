@@ -32,12 +32,10 @@ Route::get('/search/popular', [SearchController::class, 'popularTerms']);
 
 // Protected routes - require authentication
 Route::middleware('auth:api')->group(function () {
-    // User Profile Management (put specific routes first)
-    Route::post('/profile/update', [UserController::class, 'updateProfile']);
-    Route::get('/profile/test', function() { return response()->json(['message' => 'Profile route works']); });
-    Route::get('/profile/activities', [UserController::class, 'activities']);
+    // User Profile Management
     Route::get('/profile', [UserController::class, 'profile']);
-    Route::put('/profile', [UserController::class, 'updateProfile']);
+    Route::post('/profile/update', [UserController::class, 'updateProfile']);
+    Route::get('/profile/activities', [UserController::class, 'activities']);
     
     // User info
     Route::get('/user', function (Request $request) {
@@ -58,7 +56,6 @@ Route::middleware('auth:api')->group(function () {
     
     // Product management - admin only
     Route::post('/products', [ProductController::class, 'store']);
-    Route::put('/products/{product}', [ProductController::class, 'update']);
     Route::patch('/products/{product}', [ProductController::class, 'update']);
     Route::delete('/products/{product}', [ProductController::class, 'destroy']);
     

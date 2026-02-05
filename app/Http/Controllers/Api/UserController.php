@@ -42,37 +42,31 @@ class UserController extends Controller
         $data = $request->validated();
         
         try {
-            // Handle avatar upload if present
-            if ($request->hasFile('avatar')) {
-                $request->validate([
-                    'avatar' => ['image', 'mimes:jpeg,png,jpg,gif', 'max:2048']
-                ]);
-                
-                $avatarUrl = $this->userService->uploadAvatar(
-                    $user,
-                    $request->file('avatar')
-                );
+            // Update profile using UserService
+            $updatedUser = $this->userService->updateProfile($user, $data);
+            
+            // Get response data with avatar URL
+            $responseData = $updatedUser->toArray();
+            
+            // Generate avatar URL
+            if ($updatedUser->avatar) {
+                $baseUrl = config('app.url');
+                if (request()->getHost() === 'localhost') {
+                    $baseUrl = str_replace('127.0.0.1', 'localhost', $baseUrl);
+                }
+                $responseData['avatar_url'] = $baseUrl . '/storage/' . $updatedUser->avatar;
+            } else {
+                $responseData['avatar_url'] = null;
             }
             
-            // Update profile data (exclude avatar file from data)
-            $profileData = collect($data)->except('avatar')->toArray();
-            if (!empty($profileData)) {
-                $user = $this->userService->updateProfile($user, $profileData);
-            }
+            // Remove sensitive data
+            unset($responseData['password']);
             
-            // Get updated profile with avatar URL
-            $responseData = $user->fresh()->toArray();
-            $responseData['avatar_url'] = $user->avatar ? Storage::disk('public')->url($user->avatar) : null;
+            $message = isset($data['new_password']) 
+                ? 'Profile and password updated successfully'
+                : 'Profile updated successfully';
             
-            $message = 'Profile updated successfully';
-            if (isset($data['new_password'])) {
-                $message = 'Profile and password updated successfully';
-            }
-            
-            return $this->successResponse(
-                $responseData,
-                $message
-            );
+            return $this->successResponse($responseData, $message);
             
         } catch (\Exception $e) {
             return $this->errorResponse($e->getMessage(), 400);

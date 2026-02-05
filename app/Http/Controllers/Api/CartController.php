@@ -16,7 +16,6 @@ class CartController extends Controller
     public function __construct()
     {
         $this->middleware('auth:api');
-        $this->middleware('permission:manage cart', ['except' => []]);
     }
 
     /**

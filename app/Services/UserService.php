@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 
 class UserService
 {
@@ -22,8 +23,6 @@ class UserService
      */
     public function updateProfile(User $user, array $data): User
     {
-        $originalData = $user->toArray();
-        
         // Handle password change if provided
         if (isset($data['current_password']) && isset($data['new_password'])) {
             // Verify current password
@@ -36,12 +35,6 @@ class UserService
             
             // Remove password fields from data
             unset($data['current_password'], $data['new_password'], $data['new_password_confirmation']);
-            
-            // Log password change
-            $this->activityLogService->logActivity(
-                'password_changed',
-                'User changed their password'
-            );
         }
         
         // Handle avatar upload if present
@@ -56,20 +49,13 @@ class UserService
             $data['avatar'] = $path;
         }
         
-        $user->update($data);
+        // Remove empty/null values to avoid overwriting with empty data
+        $data = array_filter($data, function($value) {
+            return $value !== null && $value !== '';
+        });
         
-        // Log profile update (exclude password from logs)
-        $logData = collect($data)->except(['password'])->toArray();
-        if (!empty($logData)) {
-            $this->activityLogService->logActivity(
-                'profile_updated',
-                'User updated their profile',
-                [
-                    'original' => collect($originalData)->except(['password'])->toArray(),
-                    'updated' => collect($user->fresh()->toArray())->except(['password'])->toArray()
-                ]
-            );
-        }
+        // Perform the update
+        $user->update($data);
         
         return $user->fresh();
     }
@@ -157,10 +143,21 @@ class UserService
     {
         $activities = $this->activityLogService->getUserActivities($user->id, 10);
         
+        // Generate avatar URL with proper base URL
+        $avatarUrl = null;
+        if ($user->avatar) {
+            $baseUrl = config('app.url');
+            // Support both localhost and 127.0.0.1
+            if (request()->getHost() === 'localhost') {
+                $baseUrl = str_replace('127.0.0.1', 'localhost', $baseUrl);
+            }
+            $avatarUrl = $baseUrl . '/storage/' . $user->avatar;
+        }
+        
         return [
-            'user' => $user,
+            'user' => $user->makeHidden(['password']),
             'recent_activities' => $activities->items(),
-            'avatar_url' => $user->avatar ? Storage::disk('public')->url($user->avatar) : null
+            'avatar_url' => $avatarUrl
         ];
     }
 }

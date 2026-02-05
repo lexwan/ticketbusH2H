@@ -27,13 +27,28 @@ class UpdateProfileRequest extends FormRequest
             'phone' => ['sometimes', 'nullable', 'string', 'max:20'],
             'address' => ['sometimes', 'nullable', 'string', 'max:500'],
             'date_of_birth' => ['sometimes', 'nullable', 'date', 'before:today'],
-            'avatar' => ['sometimes', 'image', 'mimes:jpeg,png,jpg,gif', 'max:2048'],
+            'avatar' => ['sometimes', 'nullable', 'image', 'mimes:jpeg,png,jpg,gif', 'max:2048'],
             
             // Password change fields
-            'current_password' => ['sometimes', 'required_with:new_password', 'string'],
-            'new_password' => ['sometimes', 'string', 'min:8', 'confirmed'],
-            'new_password_confirmation' => ['sometimes', 'required_with:new_password']
+            'current_password' => ['sometimes', 'nullable', 'string'],
+            'new_password' => ['sometimes', 'nullable', 'string', 'min:8', 'confirmed'],
+            'new_password_confirmation' => ['sometimes', 'nullable']
         ];
+    }
+
+    /**
+     * Prepare the data for validation.
+     */
+    protected function prepareForValidation()
+    {
+        // Remove placeholder values and empty strings
+        $data = $this->all();
+        
+        foreach ($data as $key => $value) {
+            if (in_array($value, ['string', 'string,null', '', null])) {
+                $this->request->remove($key);
+            }
+        }
     }
 
     /**

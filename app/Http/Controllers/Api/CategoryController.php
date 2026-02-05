@@ -21,11 +21,10 @@ class CategoryController extends Controller
     {
         $this->categoryService = $categoryService;
         
-        // Permission-based access control
+        // Authentication required for create, update, delete
         $this->middleware('auth:api', ['except' => ['index', 'show']]);
-        $this->middleware('permission:create categories', ['only' => ['store']]);
-        $this->middleware('permission:edit categories', ['only' => ['update']]);
-        $this->middleware('permission:delete categories', ['only' => ['destroy']]);
+        // Admin role required for create, update, delete
+        $this->middleware('role:admin', ['only' => ['store', 'update', 'destroy']]);
     }
 
     /**
@@ -46,14 +45,6 @@ class CategoryController extends Controller
      */
     public function store(StoreCategoryRequest $request): JsonResponse
     {
-        // Check if user has admin role
-        if (!auth()->user()->hasRole('admin')) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Unauthorized. Admin role required.'
-            ], 403);
-        }
-        
         $category = $this->categoryService->createCategory($request->validated());
 
         return $this->createdResponse(

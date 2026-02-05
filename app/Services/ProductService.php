@@ -8,6 +8,9 @@ use Illuminate\Pagination\LengthAwarePaginator;
 
 class ProductService
 {
+    public function __construct(
+        private ProductImageService $productImageService
+    ) {}
     /**
      * Get paginated list of products.
      *
@@ -48,7 +51,18 @@ class ProductService
      */
     public function createProduct(array $data): Product
     {
-        return Product::create($data);
+        // Extract images from data if present
+        $images = $data['images'] ?? null;
+        unset($data['images']);
+        
+        $product = Product::create($data);
+        
+        // Handle image uploads if present
+        if ($images) {
+            $this->productImageService->uploadImages($product, $images);
+        }
+        
+        return $product->load('images');
     }
 
     /**
@@ -60,8 +74,18 @@ class ProductService
      */
     public function updateProduct(Product $product, array $data): Product
     {
+        // Extract images from data if present
+        $images = $data['images'] ?? null;
+        unset($data['images']);
+        
         $product->update($data);
-        return $product->fresh();
+        
+        // Handle image uploads if present (adds new images)
+        if ($images) {
+            $this->productImageService->uploadImages($product, $images);
+        }
+        
+        return $product->fresh(['images']);
     }
 
     /**
