@@ -5,11 +5,11 @@ namespace App\Services;
 use App\Models\Product;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Storage;
 
 class ProductService
 {
     public function __construct(
-        private ProductImageService $productImageService
     ) {}
     /**
      * Get paginated list of products.
@@ -51,18 +51,18 @@ class ProductService
      */
     public function createProduct(array $data): Product
     {
-        // Extract images from data if present
-        $images = $data['images'] ?? null;
-        unset($data['images']);
-        
-        $product = Product::create($data);
-        
-        // Handle image uploads if present
-        if ($images) {
-            $this->productImageService->uploadImages($product, $images);
+        if (isset($data['images']) && is_array($data['images'])) {
+            $imagePaths = [];   
+            foreach ($data['images'] as $image) {
+                if ($image instanceof \Illuminate\Http\UploadedFile) {
+                    $path = $image->store('products', 'public');
+                    $imagePaths[] = $path;
+                }
+            }
+            $data['images'] = $imagePaths;
         }
         
-        return $product->load('images');
+        return Product::create($data);
     }
 
     /**
@@ -74,18 +74,26 @@ class ProductService
      */
     public function updateProduct(Product $product, array $data): Product
     {
-        // Extract images from data if present
-        $images = $data['images'] ?? null;
-        unset($data['images']);
-        
-        $product->update($data);
-        
-        // Handle image uploads if present (adds new images)
-        if ($images) {
-            $this->productImageService->uploadImages($product, $images);
+        if (isset($data['images']) && is_array($data['images'])) {
+            if($product->images){
+                // Delete old images from storage
+                foreach ($product->images as $oldImage) {
+                    Storage::disk('public')->delete($oldImage);
+                }
+            }   
+
+            $imagePaths = [];   
+            foreach ($data['images'] as $image) {
+                if ($image instanceof \Illuminate\Http\UploadedFile) {
+                    $path = $image->store('products', 'public');
+                    $imagePaths[] = $path;
+                }
+            }
+            $data['images'] = $imagePaths;
         }
-        
-        return $product->fresh(['images']);
+
+        $product->update($data);
+        return $product->fresh();
     }
 
     /**

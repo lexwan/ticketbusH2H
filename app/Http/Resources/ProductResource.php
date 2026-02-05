@@ -28,8 +28,10 @@ class ProductResource extends JsonResource
                     'description' => $this->category->description,
                 ];
             }),
-            'images' => $this->image_urls,
-            'primary_image_url' => $this->primary_image?->image_url,
+            'images' => $this->images,
+            'image_urls' => $this->images ? array_map(function($image) {
+            return asset('storage/' . $image); 
+            }, $this->images) : [],
             'created_at' => $this->created_at?->toISOString(),
             'updated_at' => $this->updated_at?->toISOString(),
         ];

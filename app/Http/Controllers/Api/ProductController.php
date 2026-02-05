@@ -5,17 +5,12 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreProductRequest;
 use App\Http\Requests\UpdateProductRequest;
-use App\Http\Requests\UploadProductImagesRequest;
 use App\Http\Resources\ProductResource;
 use App\Models\Product;
-use App\Models\ProductImage;
 use App\Services\ProductService;
-use App\Services\ProductImageService;
 use App\Services\SearchService;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
-use Illuminate\Http\Response;
 
 class ProductController extends Controller
 {
@@ -27,8 +22,7 @@ class ProductController extends Controller
      */
     public function __construct(
         protected ProductService $productService,
-        protected SearchService $searchService,
-        protected ProductImageService $productImageService
+        protected SearchService $searchService
     ) {}
 
     /**
@@ -144,66 +138,5 @@ class ProductController extends Controller
         $this->productService->deleteProduct($product);
 
         return $this->deletedResponse('Product deleted successfully');
-    }
-
-    /**
-     * Upload images for product.
-     *
-     * @param UploadProductImagesRequest $request
-     * @param Product $product
-     * @return JsonResponse
-     */
-    public function uploadImages(UploadProductImagesRequest $request, Product $product): JsonResponse
-    {
-        $images = $this->productImageService->uploadImages(
-            $product,
-            $request->file('images')
-        );
-
-        return $this->createdResponse(
-            ['images' => $images],
-            'Images uploaded successfully'
-        );
-    }
-
-    /**
-     * Delete product image.
-     *
-     * @param Product $product
-     * @param ProductImage $image
-     * @return JsonResponse
-     */
-    public function deleteImage(Product $product, ProductImage $image): JsonResponse
-    {
-        // Ensure image belongs to product
-        if ($image->product_id !== $product->id) {
-            return $this->errorResponse('Image not found for this product', 404);
-        }
-
-        $this->productImageService->deleteImage($image);
-
-        return $this->deletedResponse('Image deleted successfully');
-    }
-
-    /**
-     * Set image as primary.
-     *
-     * @param Product $product
-     * @param ProductImage $image
-     * @return JsonResponse
-     */
-    public function setPrimaryImage(Product $product, ProductImage $image): JsonResponse
-    {
-        // Ensure image belongs to product
-        if ($image->product_id !== $product->id) {
-            return $this->errorResponse('Image not found for this product', 404);
-        }
-
-        $updatedImage = $this->productImageService->setPrimaryImage($image);
-
-        return $this->successResponse(
-            ['image' => $updatedImage],
-            'Primary image set successfully'
-        );
     }
 }

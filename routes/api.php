@@ -30,7 +30,7 @@ Route::get('/search/suggestions', [SearchController::class, 'suggestions']);
 Route::get('/search/filters', [SearchController::class, 'filterOptions']);
 Route::get('/search/popular', [SearchController::class, 'popularTerms']);
 
-// Protected routes - require authentication
+// Protected routes - butuh authentication
 Route::middleware('auth:api')->group(function () {
     // User Profile Management
     Route::get('/profile', [UserController::class, 'profile']);
@@ -58,11 +58,6 @@ Route::middleware('auth:api')->group(function () {
     Route::post('/products', [ProductController::class, 'store']);
     Route::patch('/products/{product}', [ProductController::class, 'update']);
     Route::delete('/products/{product}', [ProductController::class, 'destroy']);
-    
-    // Product Images - admin only
-    Route::post('/products/{product}/images', [ProductController::class, 'uploadImages']);
-    Route::delete('/products/{product}/images/{image}', [ProductController::class, 'deleteImage']);
-    Route::put('/products/{product}/images/{image}/primary', [ProductController::class, 'setPrimaryImage']);
     
     // Orders
     Route::apiResource('orders', App\Http\Controllers\Api\OrderController::class);
