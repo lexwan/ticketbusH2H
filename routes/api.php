@@ -1,54 +1,63 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
-use App\Http\Controllers\PostController;
-use Illuminate\Http\Request;
+use App\Http\Controllers\Api\PartnerController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
 
     // =====================
-    // PUBLIC ROUTES
+    // AUTHENTICATION
     // =====================
-    Route::post('/register', [AuthController::class, 'register']);
-    Route::post('/login', [AuthController::class, 'login']);
-    
-    Route::apiResource('posts', PostController::class)
-        ->only(['index', 'show']);
+    Route::prefix('auth')->group(function () {
+        // Public
+        Route::post('/login', [AuthController::class, 'login']);
+        
+        // Protected
+        Route::middleware('auth:api')->group(function () {
+            Route::post('/logout', [AuthController::class, 'logout']);
+            Route::post('/refresh', [AuthController::class, 'refresh']);
+            Route::get('/me', [AuthController::class, 'me']);
+            Route::get('/permissions', [AuthController::class, 'permissions']);
+        });
+    });
 
     // =====================
-    // PROTECTED ROUTES (Bearer Token)
+    // PROTECTED ROUTES
     // =====================
     Route::middleware('auth:api')->group(function () {
 
-        Route::post('/logout', [AuthController::class, 'logout']);
-        Route::get('/me', [AuthController::class, 'me']);
-        
-        Route::get('/user', function (Request $request) {
-            return response()->json([
-                'status' => true,
-                'message' => 'success',
-                'data' => $request->user()
-            ]);
-        });
-
-        // Admin only routes
+        // =====================
+        // ADMIN ONLY ROUTES
+        // =====================
         Route::middleware('role.permission:admin')->group(function () {
-            Route::apiResource('posts', PostController::class)
-                ->except(['index', 'show']);
+            
+            // Partner Management
+            Route::prefix('partners')->group(function () {
+                Route::post('/register', [PartnerController::class, 'register']);
+                Route::get('/', [PartnerController::class, 'index']);
+                Route::get('/{id}', [PartnerController::class, 'show']);
+                Route::put('/{id}/fee', [PartnerController::class, 'updateFee']);
+            });
+        });
+
+        // =====================
+        // MITRA ONLY ROUTES
+        // =====================
+        Route::middleware('role.permission:mitra')->group(function () {
+            // Transaction endpoints akan ditambahkan nanti
         });
     });
 
     // =====================
-    // CALLBACK ROUTES (Signature Verification)
+    // CALLBACK (Signature Verification)
     // =====================
-    Route::middleware('verify.signature')->group(function () {
-        Route::post('/callback/payment', function (Request $request) {
-            return response()->json([
-                'status' => true,
-                'message' => 'Callback received'
-            ]);
+    Route::middleware('verify.signature')->prefix('callbacks')->group(function () {
+        Route::post('/provider/payment', function () {
+            return response()->json(['status' => true, 'message' => 'Payment callback received']);
+        });
+        Route::post('/provider/ticket', function () {
+            return response()->json(['status' => true, 'message' => 'Ticket callback received']);
         });
     });
-
 });

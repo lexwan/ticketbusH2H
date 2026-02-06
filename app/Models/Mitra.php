@@ -40,4 +40,9 @@ class Mitra extends Model
     {
         return $this->hasMany(PartnerFeeLedger::class, 'mitra_id');
     }
+
+    public function partnerFees()
+    {
+        return $this->hasMany(PartnerFee::class, 'mitra_id');
+    }
 }

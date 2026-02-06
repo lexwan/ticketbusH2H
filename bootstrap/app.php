@@ -13,7 +13,6 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
-            'role' => \App\Http\Middleware\CheckRole::class,
             'role.permission' => \App\Http\Middleware\RolePermission::class,
             'verify.signature' => \App\Http\Middleware\VerifySignature::class,
         ]);
