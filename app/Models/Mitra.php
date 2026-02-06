@@ -8,6 +8,8 @@ class Mitra extends Model
 {
     protected $table = 'mitra';
     
+    public $timestamps = false;
+    
     protected $fillable = [
         'code',
         'name',

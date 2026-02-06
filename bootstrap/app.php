@@ -15,6 +15,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'role.permission' => \App\Http\Middleware\RolePermission::class,
             'verify.signature' => \App\Http\Middleware\VerifySignature::class,
+            'role' => \Spatie\Permission\Middleware\RoleMiddleware::class,
+            'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,
         ]);
         
         // Add CORS and Referrer Policy to API routes

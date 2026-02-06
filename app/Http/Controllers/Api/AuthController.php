@@ -15,12 +15,12 @@ class AuthController extends Controller
     use ApiResponse;
 
     /**
-     * Login (Admin & Mitra Only)
-     * POST /api/v1/auth/login
+     * Login admin and mitra
+     * 
      */
     public function login(LoginRequest $request)
     {
-        $user = User::with(['role', 'mitra'])
+        $user = User::with(['roles', 'mitra'])
             ->where('email', $request->email)
             ->first();
 
@@ -32,8 +32,8 @@ class AuthController extends Controller
             return $this->errorResponse('Account is inactive', null, 403);
         }
 
-        // Validasi role: hanya admin atau mitra
-        if (!in_array($user->role?->name, ['admin', 'mitra'])) {
+        // Validasi role
+        if (!$user->hasAnyRole(['admin', 'mitra'])) {
             return $this->errorResponse('Unauthorized role', null, 403);
         }
 
@@ -48,7 +48,6 @@ class AuthController extends Controller
 
     /**
      * Logout
-     * POST /api/v1/auth/logout
      */
     public function logout(Request $request)
     {
@@ -59,7 +58,6 @@ class AuthController extends Controller
 
     /**
      * Refresh Token
-     * POST /api/v1/auth/refresh
      */
     public function refresh(Request $request)
     {
@@ -76,11 +74,10 @@ class AuthController extends Controller
 
     /**
      * Get Current User
-     * GET /api/v1/auth/me
      */
     public function me(Request $request)
     {
-        $user = User::with(['role', 'mitra'])->find($request->user()->id);
+        $user = User::with(['roles', 'mitra'])->find($request->user()->id);
 
         return $this->successResponse(
             new UserResource($user),
@@ -90,15 +87,14 @@ class AuthController extends Controller
 
     /**
      * Get User Permissions
-     * GET /api/v1/auth/permissions
      */
     public function permissions(Request $request)
     {
         $user = $request->user();
-        $user->load('role');
+        $user->load('roles');
         
         $permissions = [
-            'role' => $user->role?->name,
+            'role' => $user->getRoleNames()->first(),
             'permissions' => $this->getUserPermissions($user)
         ];
 
@@ -109,28 +105,11 @@ class AuthController extends Controller
     }
 
     /**
-     * Helper: Get permissions based on role
+     * Get permissions based on role
      */
     private function getUserPermissions($user)
     {
-        $roleName = $user->role?->name;
-
-        $rolePermissions = [
-            'admin' => [
-                'users.view', 'users.create', 'users.update', 'users.delete',
-                'mitra.view', 'mitra.register', 'mitra.fee',
-                'topups.view', 'topups.approve', 'topups.reject',
-                'transactions.view', 'transactions.cancel',
-                'reports.view', 'dashboard.admin'
-            ],
-            'mitra' => [
-                'transactions.search', 'transactions.book', 'transactions.pay',
-                'transactions.view', 'transactions.issue',
-                'balance.view', 'topup.create', 'topup.view',
-                'dashboard.partner'
-            ]
-        ];
-
-        return $rolePermissions[$roleName] ?? [];
+        // permission spatie
+        return $user->getAllPermissions()->pluck('name')->toArray();
     }
 }

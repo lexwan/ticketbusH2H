@@ -16,7 +16,7 @@ class RolePermission
             ], 401);
         }
 
-        if (!$request->user()->role || !in_array($request->user()->role->name, $roles)) {
+        if (!$request->user()->hasAnyRole($roles)) {
             return response()->json([
                 'status' => false,
                 'message' => 'Forbidden - Insufficient permissions'

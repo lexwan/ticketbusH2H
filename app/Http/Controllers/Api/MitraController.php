@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Traits\ApiResponse;
 use App\Models\Mitra;
 use App\Models\User;
-use App\Models\Role;
+use Spatie\Permission\Models\Role;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -14,20 +14,13 @@ use Illuminate\Support\Facades\Hash;
 class MitraController extends Controller
 {
     use ApiResponse;
-
-    /**
-     * Admin: Register Mitra Baru
-     * POST /api/v1/mitra/register
-     */
     public function register(Request $request)
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:mitra,email',
+            'email' => 'required|email|unique:users,email',
             'phone' => 'required|string',
-            'user_name' => 'required|string',
-            'user_email' => 'required|email|unique:users,email',
-            'user_password' => 'required|string|min:6'
+            'password' => 'required|string|min:6'
         ]);
 
         DB::beginTransaction();
@@ -45,18 +38,16 @@ class MitraController extends Controller
                 'balance' => 0
             ]);
 
-            // Ambil role mitra
-            $mitraRole = Role::where('name', 'mitra')->first();
-
             // Buat user untuk mitra
             $user = User::create([
-                'name' => $request->user_name,
-                'email' => $request->user_email,
-                'password' => Hash::make($request->user_password),
-                'role_id' => $mitraRole->id,
+                'name' => $request->name,
+                'email' => $request->email,
+                'password' => Hash::make($request->password),
                 'mitra_id' => $mitra->id,
                 'status' => 'active'
             ]);
+            
+            $user->assignRole('mitra');
 
             DB::commit();
 
