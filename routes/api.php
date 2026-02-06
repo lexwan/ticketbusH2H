@@ -1,7 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
-use App\Http\Controllers\Api\PartnerController;
+use App\Http\Controllers\Api\MitraController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
@@ -32,12 +32,12 @@ Route::prefix('v1')->group(function () {
         // =====================
         Route::middleware('role.permission:admin')->group(function () {
             
-            // Partner Management
-            Route::prefix('partners')->group(function () {
-                Route::post('/register', [PartnerController::class, 'register']);
-                Route::get('/', [PartnerController::class, 'index']);
-                Route::get('/{id}', [PartnerController::class, 'show']);
-                Route::put('/{id}/fee', [PartnerController::class, 'updateFee']);
+            // Mitra Management
+            Route::prefix('mitra')->group(function () {
+                Route::post('/register', [MitraController::class, 'register']);
+                Route::get('/', [MitraController::class, 'index']);
+                Route::get('/{id}', [MitraController::class, 'show']);
+                Route::put('/{id}/fee', [MitraController::class, 'updateFee']);
             });
         });
 

@@ -118,7 +118,7 @@ class AuthController extends Controller
         $rolePermissions = [
             'admin' => [
                 'users.view', 'users.create', 'users.update', 'users.delete',
-                'partners.view', 'partners.register', 'partners.fee',
+                'mitra.view', 'mitra.register', 'mitra.fee',
                 'topups.view', 'topups.approve', 'topups.reject',
                 'transactions.view', 'transactions.cancel',
                 'reports.view', 'dashboard.admin'

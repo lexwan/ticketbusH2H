@@ -11,13 +11,13 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
-class PartnerController extends Controller
+class MitraController extends Controller
 {
     use ApiResponse;
 
     /**
      * Admin: Register Mitra Baru
-     * POST /api/v1/partners/register
+     * POST /api/v1/mitra/register
      */
     public function register(Request $request)
     {
@@ -67,47 +67,47 @@ class PartnerController extends Controller
                     'name' => $user->name,
                     'email' => $user->email
                 ]
-            ], 'Partner registered successfully', 201);
+            ], 'Mitra registered successfully', 201);
 
         } catch (\Exception $e) {
             DB::rollBack();
-            return $this->errorResponse('Failed to register partner: ' . $e->getMessage(), null, 500);
+            return $this->errorResponse('Failed to register mitra: ' . $e->getMessage(), null, 500);
         }
     }
 
     /**
-     * Get All Partners
-     * GET /api/v1/partners
+     * Get All Mitra
+     * GET /api/v1/mitra
      */
     public function index(Request $request)
     {
-        $partners = Mitra::with('users')
+        $mitra = Mitra::with('users')
             ->when($request->status, function($q) use ($request) {
                 $q->where('status', $request->status);
             })
             ->paginate(20);
 
-        return $this->successResponse($partners, 'Partners retrieved successfully');
+        return $this->successResponse($mitra, 'Mitra retrieved successfully');
     }
 
     /**
-     * Get Partner Detail
-     * GET /api/v1/partners/{id}
+     * Get Mitra Detail
+     * GET /api/v1/mitra/{id}
      */
     public function show($id)
     {
-        $partner = Mitra::with('users')->find($id);
+        $mitra = Mitra::with('users')->find($id);
 
-        if (!$partner) {
-            return $this->errorResponse('Partner not found', null, 404);
+        if (!$mitra) {
+            return $this->errorResponse('Mitra not found', null, 404);
         }
 
-        return $this->successResponse($partner, 'Partner retrieved successfully');
+        return $this->successResponse($mitra, 'Mitra retrieved successfully');
     }
 
     /**
-     * Update Partner Fee
-     * PUT /api/v1/partners/{id}/fee
+     * Update Mitra Fee
+     * PUT /api/v1/mitra/{id}/fee
      */
     public function updateFee(Request $request, $id)
     {
@@ -116,13 +116,13 @@ class PartnerController extends Controller
             'value' => 'required|numeric|min:0'
         ]);
 
-        $partner = Mitra::find($id);
-        if (!$partner) {
-            return $this->errorResponse('Partner not found', null, 404);
+        $mitra = Mitra::find($id);
+        if (!$mitra) {
+            return $this->errorResponse('Mitra not found', null, 404);
         }
 
-        // Update atau create partner fee
-        $partner->partnerFees()->updateOrCreate(
+        // Update atau create mitra fee
+        $mitra->partnerFees()->updateOrCreate(
             ['mitra_id' => $id],
             [
                 'type' => $request->type,
@@ -131,6 +131,6 @@ class PartnerController extends Controller
             ]
         );
 
-        return $this->successResponse(null, 'Partner fee updated successfully');
+        return $this->successResponse(null, 'Mitra fee updated successfully');
     }
 }

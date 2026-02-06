@@ -49,8 +49,7 @@ POST /api/v1/login
 ### 2. Role & Permission Middleware
 Endpoint tertentu memerlukan role khusus:
 - `admin`: Full access
-- `user`: Limited access
-- `mitra`: Partner access
+- `mitra`: Mitra access
 
 ### 3. Signature Verification (Callback)
 Untuk endpoint callback, kirim signature di header:
@@ -67,24 +66,9 @@ $signature = hash_hmac('sha256', $payload, $secret);
 
 ### Authentication
 
-#### Register
-```http
-POST /api/v1/register
-Content-Type: application/json
-
-{
-  "name": "John Doe",
-  "email": "john@example.com",
-  "password": "password123",
-  "password_confirmation": "password123",
-  "role_id": 1,
-  "mitra_id": 1
-}
-```
-
 #### Login
 ```http
-POST /api/v1/login
+POST /api/v1/auth/login
 Content-Type: application/json
 
 {
@@ -95,13 +79,13 @@ Content-Type: application/json
 
 #### Logout
 ```http
-POST /api/v1/logout
+POST /api/v1/auth/logout
 Authorization: Bearer {token}
 ```
 
 #### Get Current User
 ```http
-GET /api/v1/me
+GET /api/v1/auth/me
 Authorization: Bearer {token}
 ```
 
@@ -111,16 +95,17 @@ Semua route di bawah ini memerlukan Bearer Token.
 
 #### Admin Only Routes
 Memerlukan role `admin`:
-- POST /api/v1/posts
-- PUT /api/v1/posts/{id}
-- DELETE /api/v1/posts/{id}
+- POST /api/v1/mitra/register
+- GET /api/v1/mitra
+- GET /api/v1/mitra/{id}
+- PUT /api/v1/mitra/{id}/fee
 
 ### Callback Routes
 
 Memerlukan signature verification di header `X-Signature`:
 
 ```http
-POST /api/v1/callback/payment
+POST /api/v1/callbacks/provider/payment
 X-Signature: {signature}
 Content-Type: application/json
 
@@ -150,12 +135,12 @@ Content-Type: application/json
 
 ```bash
 # Login
-curl -X POST http://localhost:8000/api/v1/login \
+curl -X POST http://localhost:8000/api/v1/auth/login \
   -H "Content-Type: application/json" \
   -d '{"email":"admin@example.com","password":"password"}'
 
 # Get user with token
-curl -X GET http://localhost:8000/api/v1/me \
+curl -X GET http://localhost:8000/api/v1/auth/me \
   -H "Authorization: Bearer YOUR_TOKEN"
 ```
 
