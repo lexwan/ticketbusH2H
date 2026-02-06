@@ -1,87 +1,54 @@
 <?php
 
-use App\Http\Controllers\Api\ProductController;
-use App\Http\Controllers\Api\SearchController;
-use App\Http\Controllers\Api\UserController;
-use App\Http\Controllers\Api\CategoryController;
+use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\PostController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-/*
-|--------------------------------------------------------------------------
-| API Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register API routes for your application. These
-| routes are loaded by the RouteServiceProvider and all of them will
-| be assigned to the "api" middleware group. Make something great!
-|
-*/
+Route::prefix('v1')->group(function () {
 
-// Public routes
-Route::post('/register', [App\Http\Controllers\Api\AuthController::class, 'register']);
-Route::post('/login', [App\Http\Controllers\Api\AuthController::class, 'login']);
-
-Route::get('/categories', [CategoryController::class, 'index']);
-Route::get('/categories/{category}', [CategoryController::class, 'show']);
-
-Route::get('/search', [SearchController::class, 'searchProducts']);
-Route::get('/search/suggestions', [SearchController::class, 'suggestions']);
-Route::get('/search/filters', [SearchController::class, 'filterOptions']);
-Route::get('/search/popular', [SearchController::class, 'popularTerms']);
-
-// Protected routes - butuh authentication
-Route::middleware('auth:api')->group(function () {
-    // User Profile Management
-    Route::get('/profile', [UserController::class, 'profile']);
-    Route::post('/profile/update', [UserController::class, 'updateProfile']);
-    Route::get('/profile/activities', [UserController::class, 'activities']);
+    // =====================
+    // PUBLIC ROUTES
+    // =====================
+    Route::post('/register', [AuthController::class, 'register']);
+    Route::post('/login', [AuthController::class, 'login']);
     
-    // User info
-    Route::get('/user', function (Request $request) {
-        $user = $request->user();
-        return response()->json([
-            'success' => true,
-            'data' => [
-                'id' => $user->id,
-                'name' => $user->name,
-                'email' => $user->email,
-                'role' => $user->role,
-            ]
-        ]);
+    Route::apiResource('posts', PostController::class)
+        ->only(['index', 'show']);
+
+    // =====================
+    // PROTECTED ROUTES (Bearer Token)
+    // =====================
+    Route::middleware('auth:api')->group(function () {
+
+        Route::post('/logout', [AuthController::class, 'logout']);
+        Route::get('/me', [AuthController::class, 'me']);
+        
+        Route::get('/user', function (Request $request) {
+            return response()->json([
+                'status' => true,
+                'message' => 'success',
+                'data' => $request->user()
+            ]);
+        });
+
+        // Admin only routes
+        Route::middleware('role.permission:admin')->group(function () {
+            Route::apiResource('posts', PostController::class)
+                ->except(['index', 'show']);
+        });
     });
 
-    //categories
-    Route::post('/categories', [CategoryController::class, 'store']);
-    Route::put('/categories/{category}', [CategoryController::class, 'update']);
-    Route::delete('/categories/{category}', [CategoryController::class, 'destroy']);
-    
-    // Logout
-    Route::post('/logout', [App\Http\Controllers\Api\AuthController::class, 'logout']);
-    
-    // Product routes - all users can view
-    Route::get('/products', [ProductController::class, 'index']);
-    Route::get('/products/{product}', [ProductController::class, 'show']);
-    
-    // Product management - admin only
-    Route::post('/products', [ProductController::class, 'store']);
-    Route::patch('/products/{product}', [ProductController::class, 'update']);
-    Route::delete('/products/{product}', [ProductController::class, 'destroy']);
-    
-    // Orders
-    Route::apiResource('orders', App\Http\Controllers\Api\OrderController::class);
-    
-    // Cart
-    Route::get('/cart', [App\Http\Controllers\Api\CartController::class, 'index']);
-    Route::post('/cart', [App\Http\Controllers\Api\CartController::class, 'store']);
-    Route::put('/cart/{cart}', [App\Http\Controllers\Api\CartController::class, 'update']);
-    Route::delete('/cart/{cart}', [App\Http\Controllers\Api\CartController::class, 'destroy']);
-    Route::delete('/cart', [App\Http\Controllers\Api\CartController::class, 'clear']);
-    Route::post('/cart/checkout', [App\Http\Controllers\Api\CartController::class, 'checkout']);
-    
-    // Payments
-    Route::post('/payments', [App\Http\Controllers\Api\PaymentController::class, 'store']);
-    Route::get('/payments/{payment}', [App\Http\Controllers\Api\PaymentController::class, 'show']);
-    Route::post('/payments/{payment}/confirm', [App\Http\Controllers\Api\PaymentController::class, 'confirm']);
-    Route::get('/payments/{payment}/status', [App\Http\Controllers\Api\PaymentController::class, 'status']);
+    // =====================
+    // CALLBACK ROUTES (Signature Verification)
+    // =====================
+    Route::middleware('verify.signature')->group(function () {
+        Route::post('/callback/payment', function (Request $request) {
+            return response()->json([
+                'status' => true,
+                'message' => 'Callback received'
+            ]);
+        });
+    });
+
 });

@@ -14,6 +14,8 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
             'role' => \App\Http\Middleware\CheckRole::class,
+            'role.permission' => \App\Http\Middleware\RolePermission::class,
+            'verify.signature' => \App\Http\Middleware\VerifySignature::class,
         ]);
         
         // Add CORS and Referrer Policy to API routes
@@ -21,6 +23,9 @@ return Application::configure(basePath: dirname(__DIR__))
             \Illuminate\Http\Middleware\HandleCors::class,
             \App\Http\Middleware\SetReferrerPolicy::class,
         ]);
+        
+        // Rate limiting for API
+        $middleware->throttleApi();
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         // Handle API exceptions with base response format
