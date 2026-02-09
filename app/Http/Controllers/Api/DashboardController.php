@@ -20,29 +20,21 @@ class DashboardController extends Controller
      */
     public function admin(Request $request)
     {
+        $today = today();
+        $startOfMonth = now()->startOfMonth();
+        $endOfMonth = now()->endOfMonth();
+
         $data = [
-            'total_mitra' => Mitra::count(),
-            'total_mitra_active' => Mitra::where('status', 'active')->count(),
-            'total_mitra_pending' => Mitra::where('status', 'pending')->count(),
-            
-            'total_users' => User::count(),
-            
-            'total_transactions' => Transaction::count(),
-            'total_transactions_today' => Transaction::whereDate('created_at', today())->count(),
-            'total_revenue' => Transaction::where('status', 'issued')->sum('amount'),
-            'revenue_today' => Transaction::where('status', 'issued')
-                ->whereDate('created_at', today())
-                ->sum('amount'),
-            
-            'total_topups_pending' => Topup::where('status', 'pending')->count(),
-            'total_topups_today' => Topup::whereDate('created_at', today())->count(),
-            
-            'recent_transactions' => Transaction::with(['mitra', 'user'])
-                ->latest()
-                ->limit(10)
+            'total_transactions_today' => Transaction::whereDate('created_at', $today)->count(),
+            'total_transactions_month' => Transaction::whereBetween('created_at', [$startOfMonth, $endOfMonth])->count(),
+            'total_deposit' => Topup::where('status', 'success')->sum('amount'),
+            'total_fee_mitra' => DB::table('transaction_fees')->sum('fee_amount'),
+            'chart_transactions' => Transaction::selectRaw('DATE(created_at) as date, COUNT(*) as total')
+                ->where('created_at', '>=', now()->subDays(7))
+                ->groupBy('date')
+                ->orderBy('date')
                 ->get(),
-            
-            'recent_topups' => Topup::with('mitra')
+            'recent_activities' => Transaction::with(['mitra', 'user'])
                 ->latest()
                 ->limit(10)
                 ->get(),
@@ -64,42 +56,16 @@ class DashboardController extends Controller
         }
 
         $data = [
-            'mitra_info' => [
-                'code' => $mitra->code,
-                'name' => $mitra->name,
-                'email' => $mitra->email,
-                'phone' => $mitra->phone,
-                'status' => $mitra->status,
-                'balance' => $mitra->balance,
-            ],
-            
+            'balance' => $mitra->balance,
             'total_transactions' => Transaction::where('mitra_id', $mitra->id)->count(),
-            'total_transactions_today' => Transaction::where('mitra_id', $mitra->id)
-                ->whereDate('created_at', today())
-                ->count(),
-            
-            'total_spent' => Transaction::where('mitra_id', $mitra->id)
-                ->where('status', 'issued')
-                ->sum('amount'),
-            'spent_today' => Transaction::where('mitra_id', $mitra->id)
-                ->where('status', 'issued')
-                ->whereDate('created_at', today())
-                ->sum('amount'),
-            
-            'transactions_by_status' => Transaction::where('mitra_id', $mitra->id)
-                ->select('status', DB::raw('count(*) as total'))
-                ->groupBy('status')
-                ->get(),
-            
-            'recent_transactions' => Transaction::where('mitra_id', $mitra->id)
-                ->with('passengers')
-                ->latest()
-                ->limit(10)
-                ->get(),
-            
-            'recent_topups' => Topup::where('mitra_id', $mitra->id)
-                ->latest()
-                ->limit(5)
+            'total_fee_earned' => DB::table('transaction_fees')
+                ->where('mitra_id', $mitra->id)
+                ->sum('fee_amount'),
+            'chart_transactions' => Transaction::where('mitra_id', $mitra->id)
+                ->selectRaw('DATE(created_at) as date, COUNT(*) as total')
+                ->where('created_at', '>=', now()->subDays(7))
+                ->groupBy('date')
+                ->orderBy('date')
                 ->get(),
         ];
 

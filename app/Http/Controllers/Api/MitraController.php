@@ -18,57 +18,37 @@ class MitraController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email',
-            'phone' => 'required|string',
-            'password' => 'required|string|min:6'
+            'email' => 'required|email|unique:mitra,email',
+            'phone' => 'required|string'
         ]);
 
-        DB::beginTransaction();
         try {
             // Generate kode mitra
             $code = 'MTR' . strtoupper(substr(uniqid(), -6));
 
-            // Buat mitra
+            // Buat mitra saja (tidak buat user)
             $mitra = Mitra::create([
                 'code' => $code,
                 'name' => $request->name,
                 'email' => $request->email,
                 'phone' => $request->phone,
-                'status' => 'active',
+                'status' => 'active',  // Status langsung active
                 'balance' => 0
             ]);
 
-            // Buat user untuk mitra
-            $user = User::create([
-                'name' => $request->name,
-                'email' => $request->email,
-                'password' => Hash::make($request->password),
-                'mitra_id' => $mitra->id,
-                'status' => 'active'
-            ]);
-            
-            $user->assignRole('mitra');
-
-            DB::commit();
-
-            return $this->successResponse([
-                'mitra' => $mitra,
-                'user' => [
-                    'id' => $user->id,
-                    'name' => $user->name,
-                    'email' => $user->email
-                ]
-            ], 'Mitra registered successfully', 201);
+            return $this->successResponse(
+                $mitra,
+                'Mitra registered successfully. Use /users to create user for this mitra.',
+                201
+            );
 
         } catch (\Exception $e) {
-            DB::rollBack();
             return $this->errorResponse('Failed to register mitra: ' . $e->getMessage(), null, 500);
         }
     }
 
     /**
      * Get All Mitra
-     * GET /api/v1/mitra
      */
     public function index(Request $request)
     {
@@ -83,7 +63,6 @@ class MitraController extends Controller
 
     /**
      * Get Mitra Detail
-     * GET /api/v1/mitra/{id}
      */
     public function show($id)
     {
@@ -98,7 +77,6 @@ class MitraController extends Controller
 
     /**
      * Update Mitra Fee
-     * PUT /api/v1/mitra/{id}/fee
      */
     public function updateFee(Request $request, $id)
     {
@@ -123,5 +101,74 @@ class MitraController extends Controller
         );
 
         return $this->successResponse(null, 'Mitra fee updated successfully');
+    }
+
+    /**
+     * Approve Mitra
+     */
+    public function approve($id)
+    {
+        $mitra = Mitra::find($id);
+        
+        if (!$mitra) {
+            return $this->errorResponse('Mitra not found', null, 404);
+        }
+
+        if ($mitra->status === 'active') {
+            return $this->errorResponse('Mitra already active', null, 400);
+        }
+
+        if ($mitra->status === 'rejected') {
+            return $this->errorResponse('Cannot approve rejected mitra', null, 400);
+        }
+
+        // Update status mitra
+        $mitra->update(['status' => 'active']);
+
+        return $this->successResponse([
+            'mitra' => $mitra
+        ], 'Mitra approved successfully');
+    }
+
+    /**
+     * Reject Mitra
+     */
+    public function reject(Request $request, $id)
+    {
+        $request->validate([
+            'reason' => 'nullable|string|max:500'
+        ]);
+
+        $mitra = Mitra::find($id);
+        
+        if (!$mitra) {
+            return $this->errorResponse('Mitra not found', null, 404);
+        }
+
+        if ($mitra->status === 'active') {
+            return $this->errorResponse('Cannot reject active mitra', null, 400);
+        }
+
+        if ($mitra->status === 'rejected') {
+            return $this->errorResponse('Mitra already rejected', null, 400);
+        }
+
+        // Cek apakah mitra punya transaksi
+        if ($mitra->transactions()->exists()) {
+            return $this->errorResponse('Cannot reject mitra with existing transactions', null, 400);
+        }
+
+        // Cek apakah mitra punya saldo
+        if ($mitra->balance > 0) {
+            return $this->errorResponse('Cannot reject mitra with balance', null, 400);
+        }
+
+        // Update status mitra
+        $mitra->update(['status' => 'rejected']);
+
+        return $this->successResponse([
+            'mitra' => $mitra,
+            'reason' => $request->reason
+        ], 'Mitra rejected successfully');
     }
 }

@@ -19,7 +19,7 @@ class UserResource extends JsonResource
             'name'=>$this->mitra->name,
             'code'=>$this->mitra->code
         ]: null,
-        'email_verified_at' => $this->email_verified_At,
+        'email_verified_ at' => $this->email_verified_At,
         'created_at' => $this->created_at,
         'updated_at' => $this->updated_at
     ];
