@@ -18,14 +18,14 @@ class PermissionSeeder extends Seeder
             'roles.view', 'roles.create', 'roles.update', 'roles.delete',
             'permissions.view', 'permissions.assign',
             
-            // Partner/Mitra Management (Admin only)
-            'partners.view', 'partners.create', 'partners.update', 'partners.delete',
-            'partners.approve', 'partners.reject', 'partners.fee',
+            // Mitra (Admin only)
+            'mitra.view', 'mitra.create', 'mitra.update', 'mitra.delete',
+            'mitra.approve', 'mitra.reject', 'mitra.fee',
             
-            // Topup Management
+            // Topup 
             'topups.view', 'topups.create', 'topups.approve', 'topups.reject',
             
-            // Transaction Management
+            // Transaction
             'transactions.view', 'transactions.create', 'transactions.search',
             'transactions.book', 'transactions.pay', 'transactions.issue', 'transactions.cancel',
             'transactions.seat-map',
@@ -40,7 +40,7 @@ class PermissionSeeder extends Seeder
             'dashboard.admin', 'dashboard.partner',
         ];
 
-        // Create permissions
+        // create permissions
         foreach ($permissions as $permission) {
             Permission::firstOrCreate([
                 'name' => $permission,
@@ -57,8 +57,8 @@ class PermissionSeeder extends Seeder
                 'users.view', 'users.create', 'users.update', 'users.delete',
                 'roles.view', 'roles.create', 'roles.update', 'roles.delete',
                 'permissions.view', 'permissions.assign',
-                'partners.view', 'partners.create', 'partners.update', 'partners.delete',
-                'partners.approve', 'partners.reject', 'partners.fee',
+                'mitra.view', 'mitra.create', 'mitra.update', 'mitra.delete',
+                'mitra.approve', 'mitra.reject', 'mitra.fee',
                 'topups.view', 'topups.approve', 'topups.reject',
                 'transactions.view', 'transactions.cancel',
                 'balance.view', 'balance.histories', 'fee-ledgers.view',
