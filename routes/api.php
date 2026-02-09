@@ -2,13 +2,12 @@
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\MitraController;
+use App\Http\Controllers\Api\DashboardController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
 
-    // =====================
-    // AUTHENTICATION
-    // =====================
+    // auth
     Route::prefix('auth')->group(function () {
         // Public
         Route::post('/login', [AuthController::class, 'login']);
@@ -22,15 +21,14 @@ Route::prefix('v1')->group(function () {
         });
     });
 
-    // =====================
-    // PROTECTED ROUTES
-    // =====================
+    // protected
     Route::middleware('auth:api')->group(function () {
 
-        // =====================
-        // ADMIN ONLY ROUTES
-        // =====================
+        // admin only
         Route::middleware('role.permission:admin')->group(function () {
+            
+            // Dashboard Admin
+            Route::get('/dashboard/admin', [DashboardController::class, 'admin']);
             
             // Mitra Management
             Route::prefix('mitra')->group(function () {
@@ -41,17 +39,17 @@ Route::prefix('v1')->group(function () {
             });
         });
 
-        // =====================
-        // MITRA ONLY ROUTES
-        // =====================
+        // mitra only
         Route::middleware('role.permission:mitra')->group(function () {
+            
+            // Dashboard Mitra
+            Route::get('/dashboard/mitra', [DashboardController::class, 'mitra']);
+            
             // Transaction endpoints akan ditambahkan nanti
         });
     });
 
-    // =====================
-    // CALLBACK (Signature Verification)
-    // =====================
+    // Callback signature verif
     Route::middleware('verify.signature')->prefix('callbacks')->group(function () {
         Route::post('/provider/payment', function () {
             return response()->json(['status' => true, 'message' => 'Payment callback received']);
