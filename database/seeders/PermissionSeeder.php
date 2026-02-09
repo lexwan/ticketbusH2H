@@ -53,7 +53,6 @@ class PermissionSeeder extends Seeder
         $mitraRole = Role::where('name', 'mitra')->where('guard_name', 'api')->first();
 
         if ($adminRole) {
-            // Admin gets all permissions
             $adminRole->syncPermissions([
                 'users.view', 'users.create', 'users.update', 'users.delete',
                 'roles.view', 'roles.create', 'roles.update', 'roles.delete',
@@ -69,7 +68,6 @@ class PermissionSeeder extends Seeder
         }
 
         if ($mitraRole) {
-            // Mitra gets limited permissions
             $mitraRole->syncPermissions([
                 'topups.view', 'topups.create',
                 'transactions.view', 'transactions.create', 'transactions.search',
