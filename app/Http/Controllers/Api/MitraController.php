@@ -37,8 +37,8 @@ class MitraController extends Controller
             ]);
 
             return $this->successResponse(
-                $mitra,
                 'Mitra registered successfully. Use /users to create user for this mitra.',
+                $mitra,
                 201
             );
 
@@ -58,7 +58,7 @@ class MitraController extends Controller
             })
             ->paginate(20);
 
-        return $this->successResponse($mitra, 'Mitra retrieved successfully');
+        return $this->successResponse('Mitra retrieved successfully', $mitra);
     }
 
     /**
@@ -72,7 +72,7 @@ class MitraController extends Controller
             return $this->errorResponse('Mitra not found', null, 404);
         }
 
-        return $this->successResponse($mitra, 'Mitra retrieved successfully');
+        return $this->successResponse('Mitra retrieved successfully', $mitra);
     }
 
     /**
@@ -100,7 +100,7 @@ class MitraController extends Controller
             ]
         );
 
-        return $this->successResponse(null, 'Mitra fee updated successfully');
+        return $this->successResponse('Mitra fee updated successfully', null);
     }
 
     /**
@@ -125,9 +125,9 @@ class MitraController extends Controller
         // Update status mitra
         $mitra->update(['status' => 'active']);
 
-        return $this->successResponse([
+        return $this->successResponse('Mitra approved successfully', [
             'mitra' => $mitra
-        ], 'Mitra approved successfully');
+        ]);
     }
 
     /**
@@ -166,9 +166,9 @@ class MitraController extends Controller
         // Update status mitra
         $mitra->update(['status' => 'rejected']);
 
-        return $this->successResponse([
+        return $this->successResponse('Mitra rejected successfully', [
             'mitra' => $mitra,
             'reason' => $request->reason
-        ], 'Mitra rejected successfully');
+        ]);
     }
 }

@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\MitraController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\RoleController;
+use App\Http\Controllers\Api\TopupController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
@@ -60,6 +61,12 @@ Route::prefix('v1')->group(function () {
                 Route::post('/{id}/reject', [MitraController::class, 'reject']);
                 Route::put('/{id}/fee', [MitraController::class, 'updateFee']);
             });
+
+            // Topup Management (Admin only)
+            Route::prefix('topups')->group(function () {
+                Route::post('/{id}/approve', [TopupController::class, 'approve']);
+                Route::post('/{id}/reject', [TopupController::class, 'reject']);
+            });
         });
 
         // mitra only
@@ -67,8 +74,17 @@ Route::prefix('v1')->group(function () {
             
             // Dashboard Mitra
             Route::get('/dashboard/mitra', [DashboardController::class, 'mitra']);
-            
-            // Transaction endpoints akan ditambahkan nanti
+
+            // Topup Management (Mitra only)
+            Route::prefix('topups')->group(function () {
+                Route::post('/', [TopupController::class, 'store']);
+            });
+        });
+
+        // Topup Management (Both admin & mitra)
+        Route::middleware('role.permission:admin,mitra')->prefix('topups')->group(function () {
+            Route::get('/', [TopupController::class, 'index']);
+            Route::get('/{id}', [TopupController::class, 'show']);
         });
     });
 

@@ -15,11 +15,12 @@ return new class extends Migration
             $table->id();
             $table->foreignId('mitra_id')->constrained('mitra')->onDelete('cascade');
             $table->decimal('amount', 15, 2);
-            $table->enum('payment_method', ['transfer', 'va', 'wallet']);
+            $table->enum('payment_method', ['transfer', 'va', 'ewallet']);
             $table->enum('status', ['pending', 'success', 'rejected']);
             $table->string('proof_file')->nullable();
             $table->foreignId('approved_by')->nullable()->constrained('users');
             $table->timestamp('approved_at')->nullable();
+            $table->text('reject_reason')->nullable();
             $table->timestamp('created_at')->nullable();
             $table->timestamp('updated_at')->nullable();
         });
