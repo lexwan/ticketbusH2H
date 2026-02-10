@@ -54,6 +54,6 @@ class BalanceController extends Controller
 
         $histories = $query->latest()->paginate(15);
 
-        return $this->succesResponse('Balance histories retrieved successfully', $histories);
+        return $this->successResponse('Balance histories retrieved successfully', $histories);
     }
 }

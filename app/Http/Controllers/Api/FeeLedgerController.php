@@ -16,7 +16,7 @@ class FeeLedgerController extends Controller
      */
     public function index(Request $request)
     {
-        $query = PartnerFeeLedger::with(['mitra','transcation']);
+        $query = PartnerFeeLedger::with(['mitra','transaction']);
 
         if ($request->user()->hasRole('admin')) {
             if ($request->mitra_id) {
@@ -28,6 +28,6 @@ class FeeLedgerController extends Controller
 
         $ledgers = $query->latest()->paginate(15);
 
-        return $this->succesResponse('Fee ledgers retrieved successfully', $ledgers);
+        return $this->successResponse('Fee ledgers retrieved successfully', $ledgers);
     }
 }
