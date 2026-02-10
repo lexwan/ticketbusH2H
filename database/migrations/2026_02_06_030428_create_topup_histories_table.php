@@ -17,6 +17,7 @@ return new class extends Migration
             $table->foreignId('mitra_id')->constrained('mitra');
             $table->decimal('amount', 15, 2);
             $table->decimal('balance_before', 15, 2);
+            $table->decimal('balance_after', 15, 2);
             $table->text('description');
             $table->timestamp('created_at')->nullable();
         });

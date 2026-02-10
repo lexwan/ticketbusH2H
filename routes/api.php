@@ -6,6 +6,8 @@ use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\RoleController;
 use App\Http\Controllers\Api\TopupController;
+use App\Http\Controllers\Api\BalanceController;
+use App\Http\Controllers\Api\FeeLedgerController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
@@ -51,6 +53,12 @@ Route::prefix('v1')->group(function () {
                 Route::post('/{id}/permissions', [RoleController::class, 'assignPermissions']);
             });
             Route::get('/permissions', [RoleController::class, 'permissions']);
+
+            Route::middleware('role.permission:admin,mitra')->group(function () {
+                Route::get('/balance', [BalanceController::class, 'index']);
+                Route::get('/balances/histories', [BalanceController::class, 'histories']);
+                Route::get('/fee/ledgers', [FeeLedgerController::class, 'index']);
+            });
             
             // Mitra Management
             Route::prefix('mitra')->group(function () {
