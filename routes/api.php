@@ -9,6 +9,8 @@ use App\Http\Controllers\Api\TopupController;
 use App\Http\Controllers\Api\BalanceController;
 use App\Http\Controllers\Api\FeeLedgerController;
 use App\Http\Controllers\Api\TransactionController;
+use App\Http\Controllers\Api\CallbackController;
+use App\Http\Controllers\Api\ReportController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
@@ -70,6 +72,13 @@ Route::prefix('v1')->group(function () {
                 Route::post('/{id}/approve', [TopupController::class, 'approve']);
                 Route::post('/{id}/reject', [TopupController::class, 'reject']);
             });
+
+            Route::prefix('reports')->group(function () {
+                Route::get('/transactions', [ReportController::class, 'transactions']);
+                Route::get('/topups', [ReportController::class, 'topups']);
+                Route::get('/fees', [ReportController::class, 'fees']);
+                Route::get('/balances', [ReportController::class, 'balances']);
+            });
         });
 
         // mitra only
@@ -115,11 +124,7 @@ Route::prefix('v1')->group(function () {
 
     // Callback signature verif
     Route::middleware('verify.signature')->prefix('callbacks')->group(function () {
-        Route::post('/provider/payment', function () {
-            return response()->json(['status' => true, 'message' => 'Payment callback received']);
-        });
-        Route::post('/provider/ticket', function () {
-            return response()->json(['status' => true, 'message' => 'Ticket callback received']);
-        });
+        Route::post('/provider/payment', [CallbackController::class, 'payment']);
+        Route::post('/provider/ticket', [CallbackController::class, 'ticket']);
     });
 });
