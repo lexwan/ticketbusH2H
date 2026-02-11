@@ -47,7 +47,7 @@ Route::prefix('v1')->group(function () {
                 Route::delete('/{id}', [UserController::class, 'destroy']);
             });
 
-            // Role & Permission Management
+            // Role Permission Management
             Route::prefix('roles')->group(function () {
                 Route::get('/', [RoleController::class, 'index']);
                 Route::post('/', [RoleController::class, 'store']);
@@ -78,6 +78,11 @@ Route::prefix('v1')->group(function () {
                 Route::get('/topups', [ReportController::class, 'topups']);
                 Route::get('/fees', [ReportController::class, 'fees']);
                 Route::get('/balances', [ReportController::class, 'balances']);
+                
+                // Export endpoints
+                Route::get('/export/{type}', [ReportController::class, 'exportData'])
+                    ->where('type', 'transactions|topups|fees|balances');
+                Route::post('/export/combined', [ReportController::class, 'exportCombinedData']);
             });
         });
 

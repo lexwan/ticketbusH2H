@@ -10,6 +10,7 @@ use App\Models\Mitra;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
+
 class ReportController extends Controller
 {
     use ApiResponse;
@@ -211,5 +212,132 @@ class ReportController extends Controller
             'summary' => $summary,
             'balances' => $mitras,
         ]);
+    }
+
+    // Export data untuk PDF (individual)
+    public function exportData(Request $request, $type)
+    {
+        $request->validate([
+            'date_from' => 'nullable|date',
+            'date_to' => 'nullable|date',
+            'mitra_id' => 'nullable|exists:mitra,id',
+        ]);
+
+        $data = $this->getReportData($request, $type);
+        
+        return $this->successResponse('Export data retrieved', [
+            'type' => $type,
+            'data' => $data,
+            'generated_at' => now()->toIso8601String()
+        ]);
+    }
+
+    // Export data untuk PDF (combined)
+    public function exportCombinedData(Request $request)
+    {
+        $request->validate([
+            'types' => 'required|array',
+            'types.*' => 'in:transactions,topups,fees,balances',
+            'date_from' => 'nullable|date',
+            'date_to' => 'nullable|date',
+            'mitra_id' => 'nullable|exists:mitra,id',
+        ]);
+
+        $reports = [];
+        foreach ($request->types as $type) {
+            $reports[$type] = $this->getReportData($request, $type);
+        }
+        
+        return $this->successResponse('Combined export data retrieved', [
+            'reports' => $reports,
+            'generated_at' => now()->toIso8601String()
+        ]);
+    }
+
+    private function getReportData(Request $request, $type)
+    {
+        return match($type) {
+            'transactions' => $this->getTransactionData($request),
+            'topups' => $this->getTopupData($request),
+            'fees' => $this->getFeeData($request),
+            'balances' => $this->getBalanceData($request),
+        };
+    }
+
+    private function getTransactionData($request)
+    {
+        $query = Transaction::with(['mitra', 'user', 'passengers']);
+        
+        if ($request->user()->hasRole('mitra')) {
+            $query->where('mitra_id', $request->user()->mitra_id);
+        } elseif ($request->mitra_id) {
+            $query->where('mitra_id', $request->mitra_id);
+        }
+        
+        if ($request->date_from) $query->whereDate('created_at', '>=', $request->date_from);
+        if ($request->date_to) $query->whereDate('created_at', '<=', $request->date_to);
+        
+        return [
+            'items' => $query->latest()->get(),
+            'summary' => [
+                'total' => $query->count(),
+                'amount' => $query->sum('amount'),
+            ]
+        ];
+    }
+
+    private function getTopupData($request)
+    {
+        $query = Topup::with(['mitra', 'approver']);
+        
+        if ($request->user()->hasRole('mitra')) {
+            $query->where('mitra_id', $request->user()->mitra_id);
+        } elseif ($request->mitra_id) {
+            $query->where('mitra_id', $request->mitra_id);
+        }
+        
+        if ($request->date_from) $query->whereDate('created_at', '>=', $request->date_from);
+        if ($request->date_to) $query->whereDate('created_at', '<=', $request->date_to);
+        
+        return [
+            'items' => $query->latest()->get(),
+            'summary' => [
+                'total' => $query->count(),
+                'amount' => $query->where('status', 'success')->sum('amount'),
+            ]
+        ];
+    }
+
+    private function getFeeData($request)
+    {
+        $query = TransactionFee::with(['mitra', 'transaction']);
+        
+        if ($request->user()->hasRole('mitra')) {
+            $query->where('mitra_id', $request->user()->mitra_id);
+        } elseif ($request->mitra_id) {
+            $query->where('mitra_id', $request->mitra_id);
+        }
+        
+        if ($request->date_from) $query->whereDate('created_at', '>=', $request->date_from);
+        if ($request->date_to) $query->whereDate('created_at', '<=', $request->date_to);
+        
+        return [
+            'items' => $query->latest()->get(),
+            'summary' => ['total_fee' => $query->sum('fee_amount')]
+        ];
+    }
+
+    private function getBalanceData($request)
+    {
+        if ($request->user()->hasRole('mitra')) {
+            $mitra = Mitra::find($request->user()->mitra_id);
+            return ['items' => [$mitra], 'is_single' => true];
+        }
+        
+        return [
+            'items' => Mitra::select('id', 'name', 'balance')->get(),
+            'summary' => ['total_balance' => Mitra::sum('balance')],
+            'is_single' => false
+        ];
     }
 }
