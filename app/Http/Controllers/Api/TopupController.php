@@ -17,7 +17,7 @@ class TopupController extends Controller
     {
         $query = Topup::with(['mitra', 'approver']);
 
-        // Mitra only sees their own topups
+        // Mitra hanya lihat topup sendiri
         if ($request->user()->hasRole('mitra')) {
             $query->where('mitra_id', $request->user()->mitra_id);
         }
@@ -63,7 +63,7 @@ class TopupController extends Controller
     {
         $topup = Topup::with(['mitra', 'approver'])->findOrFail($id);
 
-        // Mitra can only view their own topup
+        // Mitra hanya bisa lihat topup sendiri
         if (request()->user()->hasRole('mitra') && $topup->mitra_id !== request()->user()->mitra_id) {
             return $this->errorResponse('Unauthorized', [], 403);
         }
@@ -95,7 +95,7 @@ class TopupController extends Controller
                 'approved_at' => now(),
             ]);
 
-            // Create topup history
+            // buat topup history
             TopupHistory::create([
                 'topup_id' => $topup->id,
                 'mitra_id' => $topup->mitra_id,

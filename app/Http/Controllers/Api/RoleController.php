@@ -13,7 +13,7 @@ class RoleController extends Controller
     use ApiResponse;
 
     /**
-     * All Roles Permissions
+     * Semua Permission Role
      */
     public function index()
     {
@@ -77,7 +77,7 @@ class RoleController extends Controller
     }
 
     /**
-     * Role
+     * Update Role
      */
     public function update(Request $request, $id)
     {
@@ -134,7 +134,7 @@ class RoleController extends Controller
     }
 
     /**
-     *  All Available Permissions
+     *  semua Permissions yang tersedia
      */
     public function permissions()
     {

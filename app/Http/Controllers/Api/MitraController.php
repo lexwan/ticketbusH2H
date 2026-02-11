@@ -26,18 +26,17 @@ class MitraController extends Controller
             // Generate kode mitra
             $code = 'MTR' . strtoupper(substr(uniqid(), -6));
 
-            // Buat mitra saja (tidak buat user)
             $mitra = Mitra::create([
                 'code' => $code,
                 'name' => $request->name,
                 'email' => $request->email,
                 'phone' => $request->phone,
-                'status' => 'active',  // Status langsung active
+                'status' => 'pending',
                 'balance' => 0
             ]);
 
             return $this->successResponse(
-                'Mitra registered successfully. Use /users to create user for this mitra.',
+                'Mitra registered successfully with pending status. Wait for admin approval.',
                 $mitra,
                 201
             );
@@ -48,7 +47,7 @@ class MitraController extends Controller
     }
 
     /**
-     * Get All Mitra
+     * Get Semua Mitra
      */
     public function index(Request $request)
     {
