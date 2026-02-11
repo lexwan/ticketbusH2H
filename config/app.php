@@ -123,4 +123,16 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Callback Secret Key
+    |--------------------------------------------------------------------------
+    |
+    | This key is used to verify callback signatures from external providers.
+    | Should be shared securely with the provider for HMAC SHA256 verification.
+    |
+    */
+
+    'callback_secret' => env('CALLBACK_SECRET_KEY', 'default-secret-key-change-in-production'),
+
 ];

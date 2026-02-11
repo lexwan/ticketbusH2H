@@ -38,11 +38,10 @@ class UserController extends Controller
     }
 
     /**
-     * Create User
+     * Buat User
      */
     public function store(StoreUserRequest $request)
     {
-        // Validasi: jika role mitra, mitra_id harus ada
         if ($request->role === 'mitra' && !$request->mitra_id) {
             return $this->errorResponse(
                 'mitra_id is required for mitra role. Use /mitra/register to create new mitra.',
@@ -51,7 +50,6 @@ class UserController extends Controller
             );
         }
 
-        // Validasi: jika role admin, mitra_id harus null
         if ($request->role === 'admin' && $request->mitra_id) {
             return $this->errorResponse(
                 'Admin cannot have mitra_id',
@@ -68,7 +66,6 @@ class UserController extends Controller
             'status' => $request->status ?? 'active'
         ]);
 
-        // Assign role
         $user->assignRole($request->role);
 
         return $this->successResponse(

@@ -47,13 +47,13 @@ class BalanceController extends Controller
     {
         $query = TopupHistory::with(['mitra', 'topup']);
 
-        //admin, can filter by mitra_id
+        //admin, filter by mitra_id
         if ($request->user()->hasRole('admin')) {
             if ($request->mitra_id) {
                 $query->where('mitra_id', $request->mitra_id);
             }
         } else {
-            //mitra, only see their own history
+            //mitra hanya lihat histori sendiri
             $query->where('mitra_id', $request->user()->mitra_id);
         }
 
