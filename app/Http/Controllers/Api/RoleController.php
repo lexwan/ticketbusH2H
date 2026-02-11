@@ -24,7 +24,16 @@ class RoleController extends Controller
                 return [
                     'id' => $role->id,
                     'name' => $role->name,
-                    'permissions' => $role->permissions->pluck('name')
+                    'guard_name' => $role->guard_name,
+                    'permissions' => $role->permissions->map(function($permission) {
+                        return [
+                            'id' => $permission->id,
+                            'name' => $permission->name,
+                            'description' => $permission->description ?? null,
+                        ];
+                    }),
+                    'created_at' => $role->created_at,
+                    'updated_at' => $role->updated_at
                 ];
             });
 
@@ -121,7 +130,7 @@ class RoleController extends Controller
 
         $request->validate([
             'permissions' => 'required|array',
-            'permissions.*' => 'exists:permissions,name'
+            'permissions.*' => 'integer|exists:permissions,id'
         ]);
 
         $role->syncPermissions($request->permissions);
@@ -129,7 +138,13 @@ class RoleController extends Controller
         return $this->successResponse([
             'id' => $role->id,
             'name' => $role->name,
-            'permissions' => $role->permissions->pluck('name')
+            'permissions' => $role->permissions->map(function($permission) {
+                return [
+                    'id' => $permission->id,
+                    'name' => $permission->name,
+                    'description' => $permission->description ?? null,
+                ];
+            })
         ], 'Permissions assigned successfully');
     }
 
@@ -139,7 +154,14 @@ class RoleController extends Controller
     public function permissions()
     {
         $permissions = Permission::where('guard_name', 'api')
-            ->pluck('name');
+            ->get()
+            ->map(function($permission) {
+                return [
+                    'id' => $permission->id,
+                    'name' => $permission->name,
+                    'description' => $permission->description ?? null,
+                ];
+            });
 
         return $this->successResponse($permissions, 'Permissions retrieved successfully');
     }

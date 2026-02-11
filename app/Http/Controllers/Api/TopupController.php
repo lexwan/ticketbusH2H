@@ -24,7 +24,7 @@ class TopupController extends Controller
 
         $topups = $query->latest()->paginate(15);
 
-        return $this->successResponse('Topups retrieved successfully', $topups);
+        return $this->successResponse($topups, 'Topups retrieved successfully');
     }
 
     public function store(Request $request)
@@ -100,8 +100,6 @@ class TopupController extends Controller
                 'topup_id' => $topup->id,
                 'mitra_id' => $topup->mitra_id,
                 'amount' => $topup->amount,
-                'balance_before' => $balanceBefore,
-                'balance_after' => $balanceAfter,
                 'description' => 'Topup approved',
             ]);
 

@@ -19,9 +19,13 @@ return Application::configure(basePath: dirname(__DIR__))
             'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,
         ]);
         
-        // Add CORS and Referrer Policy to API routes
-        $middleware->api(prepend: [
+        // Add CORS globally to handle preflight requests
+        $middleware->use([
             \Illuminate\Http\Middleware\HandleCors::class,
+        ]);
+        
+        // Add additional middleware to API routes
+        $middleware->api(prepend: [
             \App\Http\Middleware\SetReferrerPolicy::class,
         ]);
         

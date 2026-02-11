@@ -29,6 +29,13 @@ Route::prefix('v1')->group(function () {
     // protected
     Route::middleware('auth:api')->group(function () {
 
+        // Both admin & mitra
+        Route::middleware('role.permission:admin,mitra')->group(function () {
+            Route::get('/balance', [BalanceController::class, 'index']);
+            Route::get('/balances/histories', [BalanceController::class, 'histories']);
+            Route::get('/fee/ledgers', [FeeLedgerController::class, 'index']);
+        });
+
         // admin only
         Route::middleware('role.permission:admin')->group(function () {
             
@@ -53,12 +60,6 @@ Route::prefix('v1')->group(function () {
                 Route::post('/{id}/permissions', [RoleController::class, 'assignPermissions']);
             });
             Route::get('/permissions', [RoleController::class, 'permissions']);
-
-            Route::middleware('role.permission:admin,mitra')->group(function () {
-                Route::get('/balance', [BalanceController::class, 'index']);
-                Route::get('/balances/histories', [BalanceController::class, 'histories']);
-                Route::get('/fee/ledgers', [FeeLedgerController::class, 'index']);
-            });
             
             // Mitra Management
             Route::prefix('mitra')->group(function () {

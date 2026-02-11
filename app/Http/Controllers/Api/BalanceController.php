@@ -19,7 +19,12 @@ class BalanceController extends Controller
     {
         if ($request->user()->hasRole('admin')) {
             $balances = Mitra::select('id', 'code', 'name', 'balance')->get();
-            return $this->successResponse('Balances retrieved successfully', $balances);
+            $totalBalance = $balances->sum('balance');
+            
+            return $this->successResponse([
+                'total_balance' => $totalBalance,
+                'balances' => $balances
+            ], 'Balances retrieved successfully');
         }
 
         $mitra = Mitra::find($request->user()->mitra_id);
@@ -28,11 +33,11 @@ class BalanceController extends Controller
             return $this->errorResponse('Mitra not found', null, 404);
         }
 
-        return $this->successResponse('Balance retrieved successfully', [
+        return $this->successResponse([
             'mitra_id' => $mitra->id,
             'mitra_name' => $mitra->name,
             'balance' => $mitra->balance,
-        ]);
+        ], 'Balance retrieved successfully');
     }
 
     /**

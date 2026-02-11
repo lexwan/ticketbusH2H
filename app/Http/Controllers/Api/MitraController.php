@@ -32,7 +32,7 @@ class MitraController extends Controller
                 'name' => $request->name,
                 'email' => $request->email,
                 'phone' => $request->phone,
-                'status' => 'active',  // Status langsung active
+                'status' => 'pending',  // Status pending, butuh approval
                 'balance' => 0
             ]);
 
@@ -56,9 +56,9 @@ class MitraController extends Controller
             ->when($request->status, function($q) use ($request) {
                 $q->where('status', $request->status);
             })
-            ->paginate(20);
+            ->get();
 
-        return $this->successResponse('Mitra retrieved successfully', $mitra);
+        return $this->successResponse($mitra, 'Mitra retrieved successfully');
     }
 
     /**
@@ -72,7 +72,7 @@ class MitraController extends Controller
             return $this->errorResponse('Mitra not found', null, 404);
         }
 
-        return $this->successResponse('Mitra retrieved successfully', $mitra);
+        return $this->successResponse($mitra, 'Mitra retrieved successfully');
     }
 
     /**
