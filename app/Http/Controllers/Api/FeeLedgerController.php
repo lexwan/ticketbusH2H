@@ -33,7 +33,7 @@ class FeeLedgerController extends Controller
     }
 
     /**
-     * Get Fee Configuration
+     * Get Fee user yg aktif \ semua
      */
     public function feeConfig(Request $request)
     {

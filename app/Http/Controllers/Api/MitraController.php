@@ -61,7 +61,7 @@ class MitraController extends Controller
     }
 
     /**
-     * Get Mitra Detail
+     * Get Detail Mitra
      */
     public function show($id)
     {
@@ -75,7 +75,7 @@ class MitraController extends Controller
     }
 
     /**
-     * Update Mitra Fee
+     * Update Fee Mitra
      */
     public function updateFee(Request $request, $id)
     {
