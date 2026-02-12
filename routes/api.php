@@ -32,7 +32,7 @@ Route::prefix('v1')->group(function () {
     // protected
     Route::middleware('auth:api')->group(function () {
 
-        // admin only
+        // admin
         Route::middleware('role.permission:admin')->group(function () {
             
             // Dashboard Admin
@@ -67,7 +67,7 @@ Route::prefix('v1')->group(function () {
                 Route::put('/{id}/fee', [MitraController::class, 'updateFee']);
             });
 
-            // Topup Management (Admin only)
+            // Topup Management (Admin)
             Route::prefix('topups')->group(function () {
                 Route::post('/{id}/approve', [TopupController::class, 'approve']);
                 Route::post('/{id}/reject', [TopupController::class, 'reject']);
@@ -79,25 +79,25 @@ Route::prefix('v1')->group(function () {
                 Route::get('/fees', [ReportController::class, 'fees']);
                 Route::get('/balances', [ReportController::class, 'balances']);
                 
-                // Export endpoints
+                // Export pdf
                 Route::get('/export/{type}', [ReportController::class, 'exportData'])
                     ->where('type', 'transactions|topups|fees|balances');
                 Route::post('/export/combined', [ReportController::class, 'exportCombinedData']);
             });
         });
 
-        // mitra only
+        // mitra
         Route::middleware('role.permission:mitra')->group(function () {
             
             // Dashboard Mitra
             Route::get('/dashboard/mitra', [DashboardController::class, 'mitra']);
 
-            // Topup Management (Mitra only)
+            // Topup Management (Mitra)
             Route::prefix('topups')->group(function () {
                 Route::post('/', [TopupController::class, 'store']);
             });
             
-            // Transaction Management (Mitra only)
+            // Transaction Management (Mitra)
             Route::prefix('transactions')->group(function () {
                 Route::post('/search', [TransactionController::class, 'search']);
                 Route::post('/seat-map', [TransactionController::class, 'seatMap']);
@@ -119,9 +119,10 @@ Route::prefix('v1')->group(function () {
             Route::get('/balance', [BalanceController::class, 'index']);
             Route::get('/balance/histories', [BalanceController::class, 'histories']);
             Route::get('/fee/ledgers', [FeeLedgerController::class, 'index']);
+            Route::get('/fee/config', [FeeLedgerController::class, 'feeConfig']);
         });
 
-        // Both admin & mitra (view transactions)
+        //view transactions (admin & mitra)
         Route::middleware('role.permission:admin,mitra')->group(function () {
             Route::get('/transactions/{trx_code}', [TransactionController::class, 'show']);
         });

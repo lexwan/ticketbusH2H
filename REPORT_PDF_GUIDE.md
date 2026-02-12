@@ -2,18 +2,20 @@
 
 ## 📊 OVERVIEW
 
-Sistem ini menyediakan 4 jenis laporan yang bisa dilihat di web dan di-export ke PDF:
-1. **Transaction Report** - Laporan transaksi tiket
-2. **Topup Report** - Laporan deposit/topup mitra
-3. **Fee Report** - Laporan komisi mitra
-4. **Balance Report** - Laporan saldo mitra
+Sistem ini menyediakan 4 jenis laporan **KHUSUS ADMIN** yang bisa dilihat di web dan di-export ke PDF:
+1. **Transaction Report** - Laporan transaksi tiket semua mitra
+2. **Topup Report** - Laporan deposit/topup semua mitra
+3. **Fee Report** - Laporan komisi semua mitra
+4. **Balance Report** - Laporan saldo semua mitra
+
+**⚠️ PENTING:** Report hanya bisa diakses oleh **ADMIN**. Mitra tidak bisa akses endpoint ini.
 
 ---
 
 ## 🎯 ENDPOINTS REPORT
 
 ### 1. GET `/api/v1/reports/transactions`
-**Akses:** Admin & Mitra (mitra hanya lihat sendiri)
+**Akses:** Admin Only ⚠️
 
 **Query Parameters:**
 ```
@@ -65,7 +67,7 @@ export       : pdf|excel (optional)
 ---
 
 ### 2. GET `/api/v1/reports/topups`
-**Akses:** Admin & Mitra (mitra hanya lihat sendiri)
+**Akses:** Admin Only ⚠️
 
 **Query Parameters:**
 ```
@@ -113,7 +115,7 @@ export       : pdf|excel (optional)
 ---
 
 ### 3. GET `/api/v1/reports/fees`
-**Akses:** Admin & Mitra (mitra hanya lihat sendiri)
+**Akses:** Admin Only ⚠️
 
 **Query Parameters:**
 ```
@@ -168,7 +170,7 @@ export       : pdf|excel (optional)
 ---
 
 ### 4. GET `/api/v1/reports/balances`
-**Akses:** Admin & Mitra (mitra hanya lihat sendiri)
+**Akses:** Admin Only ⚠️
 
 **Query Parameters:**
 ```
@@ -193,21 +195,6 @@ export : pdf|excel (optional)
         "total_transactions": 150
       }
     ]
-  }
-}
-```
-
-**Response (JSON - Mitra):**
-```json
-{
-  "status": true,
-  "message": "Balance report retrieved",
-  "data": {
-    "mitra_id": 1,
-    "mitra_name": "PT. Travel Sejahtera",
-    "balance": 50000000,
-    "last_topup": "2024-01-15 10:00:00",
-    "last_transaction": "2024-01-20 14:30:00"
   }
 }
 ```
@@ -260,10 +247,9 @@ class ReportController extends Controller
 
         $query = Transaction::with(['mitra', 'user', 'passengers']);
 
-        // Filter by role
-        if ($request->user()->hasRole('mitra')) {
-            $query->where('mitra_id', $request->user()->mitra_id);
-        } elseif ($request->mitra_id) {
+        // Admin only - no role filtering needed
+        // Admin can filter by mitra_id
+        if ($request->mitra_id) {
             $query->where('mitra_id', $request->mitra_id);
         }
 
