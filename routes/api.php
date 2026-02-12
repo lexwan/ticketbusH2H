@@ -127,8 +127,8 @@ Route::prefix('v1')->group(function () {
         });
     });
 
-    // Callback signature verif
-    Route::middleware('verify.signature')->prefix('callbacks')->group(function () {
+    // Callback (No Auth)
+    Route::prefix('callbacks')->group(function () {
         Route::post('/provider/payment', [CallbackController::class, 'payment']);
         Route::post('/provider/ticket', [CallbackController::class, 'ticket']);
     });

@@ -15,7 +15,9 @@ class ReportController extends Controller
 {
     use ApiResponse;
 
-    // GET /api/v1/reports/transactions
+    /**
+     * report transactions
+     */
     public function transactions(Request $request)
     {
         $request->validate([
@@ -27,14 +29,14 @@ class ReportController extends Controller
 
         $query = Transaction::with(['mitra', 'user', 'passengers']);
 
-        // Filter by role
+        // Filter dr role
         if ($request->user()->hasRole('mitra')) {
             $query->where('mitra_id', $request->user()->mitra_id);
         } elseif ($request->mitra_id) {
             $query->where('mitra_id', $request->mitra_id);
         }
 
-        // Filter by date
+        // Filter dr date
         if ($request->date_from) {
             $query->whereDate('created_at', '>=', $request->date_from);
         }
@@ -42,14 +44,13 @@ class ReportController extends Controller
             $query->whereDate('created_at', '<=', $request->date_to);
         }
 
-        // Filter by status
+        // Filter dr status
         if ($request->status) {
             $query->where('status', $request->status);
         }
 
         $transactions = $query->latest()->paginate(50);
-
-        // Summary
+        
         $summary = [
             'total_transactions' => $query->count(),
             'total_amount' => $query->sum('amount'),
@@ -67,7 +68,9 @@ class ReportController extends Controller
         ]);
     }
 
-    // GET /api/v1/reports/topups
+    /**
+     * report topups
+     */
     public function topups(Request $request)
     {
         $request->validate([
@@ -119,7 +122,9 @@ class ReportController extends Controller
         ]);
     }
 
-    // GET /api/v1/reports/fees
+    /**
+     * report fees
+     */
     public function fees(Request $request)
     {
         $request->validate([
@@ -173,7 +178,9 @@ class ReportController extends Controller
         ]);
     }
 
-    // GET /api/v1/reports/balances
+    /**
+     * report balances
+     */
     public function balances(Request $request)
     {
         if ($request->user()->hasRole('mitra')) {
