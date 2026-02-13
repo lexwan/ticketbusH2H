@@ -64,7 +64,6 @@ class DashboardController extends Controller
                 ->sum('fee_amount'),
             'chart_transactions' => Transaction::where('mitra_id', $mitra->id)
                 ->selectRaw('DATE(created_at) as date, SUM(amount) as total')
-                ->where('created_at', '>=', now()->subDays(30))
                 ->groupBy('date')
                 ->orderBy('date')
                 ->get(),
