@@ -64,6 +64,8 @@ Route::prefix('v1')->group(function () {
                 Route::get('/{id}', [MitraController::class, 'show']);
                 Route::post('/{id}/approve', [MitraController::class, 'approve']);
                 Route::post('/{id}/reject', [MitraController::class, 'reject']);
+                Route::post('/{id}/deactivate', [MitraController::class, 'deactivate']);
+                Route::post('/{id}/reactivate', [MitraController::class, 'reactivate']);
                 Route::put('/{id}/fee', [MitraController::class, 'updateFee']);
             });
 

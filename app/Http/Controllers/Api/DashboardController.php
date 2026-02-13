@@ -58,12 +58,13 @@ class DashboardController extends Controller
         $data = [
             'balance' => $mitra->balance,
             'total_transactions' => Transaction::where('mitra_id', $mitra->id)->count(),
+            'total_amount' => Transaction::where('mitra_id', $mitra->id)->sum('amount'),
             'total_fee_earned' => DB::table('transaction_fees')
                 ->where('mitra_id', $mitra->id)
                 ->sum('fee_amount'),
             'chart_transactions' => Transaction::where('mitra_id', $mitra->id)
-                ->selectRaw('DATE(created_at) as date, COUNT(*) as total')
-                ->where('created_at', '>=', now()->subDays(7))
+                ->selectRaw('DATE(created_at) as date, SUM(amount) as total')
+                ->where('created_at', '>=', now()->subDays(30))
                 ->groupBy('date')
                 ->orderBy('date')
                 ->get(),
