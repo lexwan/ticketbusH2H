@@ -34,10 +34,32 @@ class DashboardController extends Controller
                 ->groupBy('date')
                 ->orderBy('date')
                 ->get(),
-            'recent_activities' => Transaction::with(['mitra', 'user'])
-                ->latest()
-                ->limit(10)
-                ->get(),
+            'recent_activities' => collect()
+                ->merge(Transaction::with(['mitra', 'user'])->latest()->limit(10)->get()->map(function($t) {
+                    return [
+                        'id' => 'trx-' . $t->id,
+                        'type' => 'transaction',
+                        'trx_code' => $t->trx_code,
+                        'route' => $t->route,
+                        'amount' => $t->amount,
+                        'status' => $t->status,
+                        'created_at' => $t->created_at,
+                    ];
+                }))
+                ->merge(Topup::with(['mitra'])->latest()->limit(10)->get()->map(function($t) {
+                    return [
+                        'id' => 'topup-' . $t->id,
+                        'type' => 'topup',
+                        'trx_code' => 'TOPUP-' . $t->id,
+                        'route' => 'Top Up - ' . ($t->mitra->name ?? '-'),
+                        'amount' => $t->amount,
+                        'status' => $t->status,
+                        'created_at' => $t->created_at,
+                    ];
+                }))
+                ->sortByDesc('created_at')
+                ->take(10)
+                ->values(),
         ];
 
         return $this->successResponse($data, 'Admin dashboard data retrieved');
@@ -58,12 +80,12 @@ class DashboardController extends Controller
         $data = [
             'balance' => $mitra->balance,
             'total_transactions' => Transaction::where('mitra_id', $mitra->id)->count(),
-            'total_amount' => Transaction::where('mitra_id', $mitra->id)->sum('amount'),
             'total_fee_earned' => DB::table('transaction_fees')
                 ->where('mitra_id', $mitra->id)
                 ->sum('fee_amount'),
             'chart_transactions' => Transaction::where('mitra_id', $mitra->id)
-                ->selectRaw('DATE(created_at) as date, SUM(amount) as total')
+                ->selectRaw('DATE(created_at) as date, COUNT(*) as total')
+                ->where('created_at', '>=', now()->subDays(7))
                 ->groupBy('date')
                 ->orderBy('date')
                 ->get(),
