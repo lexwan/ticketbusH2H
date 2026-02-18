@@ -24,7 +24,7 @@ class TopupController extends Controller
 
         $topups = $query->latest()->paginate(15);
 
-        return $this->successResponse('Topups retrieved successfully', $topups);
+        return $this->successResponse($topups, 'Topups retrieved successfully');
     }
 
     public function store(Request $request)
